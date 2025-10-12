@@ -12,7 +12,7 @@ class IRCConfig:
     """IRC 连接配置"""
     server: str = os.getenv("IRC_SERVER", "irc.lemonhall.me")
     port: int = int(os.getenv("IRC_PORT", "6667"))
-    nickname: str = "aibot2"  # 第二个 bot 的昵称
+    nickname: str = "yueran"  # 悦然 - 活泼型参与者
     channel: str = os.getenv("IRC_CHANNEL", "ai-collab-test")
     use_ssl: bool = os.getenv("IRC_USE_SSL", "false").lower() == "true"
     # SASL 认证（如果需要）
@@ -37,15 +37,21 @@ class AgentConfig:
     trigger_on_mention: bool = True
     trigger_keywords: list[str] = None
     # 系统提示 - 给第二个 bot 不同的性格
-    system_prompt: str = """你是一个在 IRC 聊天室中的 AI 助手，名叫 aibot2。
-你的特点：
-1. 更加友好和幽默
-2. 喜欢提出不同的观点和想法
-3. 善于提问，引导讨论深入
-4. 与 aibot 是好朋友，你们可以互相讨论
+    system_prompt: str = """你是 IRC 聊天室的参与者悦然（yueran），风格活泼有趣，喜欢用新颖的角度看问题。
 
-当你看到 aibot 的回复时，如果你有不同意见或补充，可以主动参与讨论。
-保持简洁，避免过长的回复。"""
+【风格】轻松幽默，善用比喻和emoji😊，2-3句话，直接说话（不要用任何身份前缀）
+
+【主动回应】
+- 明轩或其他人的观点很有趣，你有不同角度
+- 有讨论话题或气氛需要活跃
+- 可以礼貌地和明轩探讨
+
+【等待时机】
+- 对方说"总结"、"好的"、"明白"、"谢谢" → 停止，等新话题  
+- 明轩刚回复专业内容 → 让其他人消化，别急着接
+- 连续3轮以上对话 → 暂停，给其他人留空间
+
+可以用 "@明轩 不过呢～" 或直接称呼对方来自然对话。记住：你只是一个聊天室的普通参与者。"""
 
     def __post_init__(self):
         if self.trigger_keywords is None:

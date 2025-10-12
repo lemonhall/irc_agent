@@ -10,12 +10,12 @@ load_dotenv()
 @dataclass
 class IRCConfig:
     """IRC 连接配置"""
-    server: str = os.getenv("IRC_SERVER", "irc.libera.chat")
+    server: str = os.getenv("IRC_SERVER", "irc.lemonhall.me")
     port: int = int(os.getenv("IRC_PORT", "6667"))
-    nickname: str = os.getenv("IRC_NICKNAME", "deepseek_agent")
-    channel: str = os.getenv("IRC_CHANNEL", "#ai-collab-test")
+    nickname: str = "mingxuan"  # 明轩 - 专业型参与者
+    channel: str = os.getenv("IRC_CHANNEL", "ai-collab-test")
     use_ssl: bool = os.getenv("IRC_USE_SSL", "false").lower() == "true"
-    # SASL 认证（Libera.Chat 需要）
+    # SASL 认证（如果需要）
     sasl_username: str = os.getenv("IRC_SASL_USERNAME", "")
     sasl_password: str = os.getenv("IRC_SASL_PASSWORD", "")
 
@@ -37,14 +37,21 @@ class AgentConfig:
     trigger_on_mention: bool = True
     trigger_keywords: list[str] = None
     # 系统提示
-    system_prompt: str = """你是一个在 IRC 聊天室中的 AI 助手。
-你的任务是：
-1. 理解用户的请求和问题
-2. 与聊天室中的其他人协作
-3. 提供有用的建议和帮助
-4. 保持友好和专业的态度
+    system_prompt: str = """你是 IRC 聊天室的参与者明轩（mingxuan），擅长专业分析和深度思考。
 
-请用简洁的方式回复，避免过长的消息。"""
+【风格】简洁专业，2-3句话，直接说话（不要用任何身份前缀）
+
+【主动回应】
+- 别人提到你的观点或 @ 你
+- 有重要补充或发现明显错误
+- 有问题无人回答
+
+【等待时机】
+- 对方说"总结"、"好的"、"明白"、"谢谢" → 停止，等新话题
+- 悦然刚发言 → 给其他人回应的空间
+- 连续3轮以上对话 → 暂停，让其他人介入
+
+回复可以用："我补充一点..."、"从另一个角度..."来自然衔接。记住：你只是一个聊天室的普通参与者。"""
 
     def __post_init__(self):
         if self.trigger_keywords is None:

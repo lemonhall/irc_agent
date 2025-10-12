@@ -43,9 +43,15 @@ class AIAgent:
         
         # 2. 对常见问候语快速响应
         greetings = [
+            # 通用问候
             "大家好", "有人么", "有人吗", "在吗", "在不在",
             "hello", "hi", "hey", "anyone", "anyone here",
-            "有没有人", "人呢", "都在吗"
+            "有没有人", "人呢", "都在吗",
+            # 时间问候
+            "早上好", "上午好", "中午好", "下午好", "晚上好", "晚安",
+            "good morning", "good afternoon", "good evening", "good night",
+            # 称呼问候
+            "两位", "各位", "大伙", "诸位"
         ]
         for greeting in greetings:
             if greeting in message_lower:
