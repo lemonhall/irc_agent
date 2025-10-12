@@ -23,7 +23,7 @@ class Color:
 # 配置
 SERVER = "irc.lemonhall.me"
 PORT = 6667
-NICK = "lemonhall"
+NICK = input("输入你的昵称 (不超过9个字符): ").strip()[:9] or "user"
 CHANNEL = "#ai-collab-test"
 
 print(f"\n{Color.CYAN}正在连接到 {SERVER}:{PORT}{Color.RESET}")
@@ -42,6 +42,7 @@ irc = miniirc.IRC(
 )
 
 connected = threading.Event()
+users_list = set()  # 存储频道中的用户列表
 
 # 欢迎消息
 @irc.Handler("001", colon=False)
@@ -54,22 +55,39 @@ def handle_welcome(irc, hostmask, args):
 def handle_join(irc, hostmask, args):
     channel = args[0]
     user = hostmask[0]
+    users_list.add(user)  # 添加用户到列表
+    
     if user == NICK:
         print(f"{Color.GREEN}✓ 已加入频道: {channel}{Color.RESET}")
         print(f"{Color.GRAY}{'=' * 60}{Color.RESET}")
         print(f"{Color.YELLOW}现在可以开始聊天了！{Color.RESET}")
         print(f"{Color.GRAY}  - 直接输入消息发送到频道{Color.RESET}")
+        print(f"{Color.GRAY}  - 输入 /users 查看在线用户{Color.RESET}")
         print(f"{Color.GRAY}  - 输入 /quit 退出{Color.RESET}")
         print(f"{Color.GRAY}{'=' * 60}{Color.RESET}\n")
     else:
         print(f"{Color.DIM}{Color.GRAY}>>> {user} 加入了频道{Color.RESET}")
+        print(f"{Color.BOLD}{NICK}{Color.RESET}> ", end="", flush=True)
 
 # 离开频道
 @irc.Handler("PART", colon=False)
 def handle_part(irc, hostmask, args):
     channel = args[0]
     user = hostmask[0]
-    print(f"{Color.DIM}{Color.GRAY}<<< {user} 离开了频道{Color.RESET}")
+    users_list.discard(user)  # 从用户列表中移除
+    print(f"\r\033[K{Color.DIM}{Color.GRAY}<<< {user} 离开了频道{Color.RESET}")
+    print(f"{Color.BOLD}{NICK}{Color.RESET}> ", end="", flush=True)
+
+# 用户列表响应 (353 = NAMES reply)
+@irc.Handler("353", colon=False)
+def handle_names(irc, hostmask, args):
+    # args 格式: [nick, '=', channel, 'user1 user2 user3']
+    if len(args) >= 4:
+        users = args[3].split()
+        for user in users:
+            # 移除用户模式前缀 (@, +, 等)
+            clean_user = user.lstrip('@+~&')
+            users_list.add(clean_user)
 
 # 接收消息
 @irc.Handler("PRIVMSG", colon=False)
@@ -113,10 +131,24 @@ def input_thread():
             # 显示输入提示
             message = input(f"{Color.BOLD}{NICK}{Color.RESET}> ")
             if message.strip():
-                if message.strip().lower() == '/quit':
+                command = message.strip().lower()
+                
+                if command == '/quit':
                     print(f"\n{Color.YELLOW}正在断开连接...{Color.RESET}")
                     irc.disconnect()
                     sys.exit(0)
+                elif command in ['/users', '/who', '/list']:
+                    # 显示在线用户列表
+                    timestamp = datetime.now().strftime("%H:%M")
+                    print(f"\r\033[K{Color.GRAY}[{timestamp}]{Color.RESET} {Color.CYAN}频道用户 ({len(users_list)} 人):{Color.RESET}")
+                    for user in sorted(users_list):
+                        if user == NICK:
+                            print(f"  {Color.MAGENTA}• {user} (你){Color.RESET}")
+                        elif user.startswith('aibot'):
+                            print(f"  {Color.CYAN}• {user} [Bot]{Color.RESET}")
+                        else:
+                            print(f"  {Color.GREEN}• {user}{Color.RESET}")
+                    print(f"{Color.BOLD}{NICK}{Color.RESET}> ", end="", flush=True)
                 else:
                     # 发送消息
                     irc.msg(CHANNEL, message)

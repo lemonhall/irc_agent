@@ -1,7 +1,9 @@
-"""主程序入口"""
+"""主程序入口 - 优化 Ctrl+C 处理版本"""
 import logging
 import threading
 import time
+import sys
+import os
 from config import IRCConfig, OpenAIConfig, AgentConfig
 from irc_client import IRCClient
 from ai_agent import AIAgent
@@ -12,6 +14,9 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+# 全局标志，用于控制退出
+shutdown_flag = threading.Event()
 
 
 def main():
@@ -50,6 +55,9 @@ def main():
     # 注册消息处理器
     def handle_message(channel: str, sender: str, message: str):
         """处理 IRC 消息"""
+        if shutdown_flag.is_set():
+            return
+            
         # 判断是否需要回复
         if agent.should_respond(message, sender, irc_config.nickname):
             logger.info(f"触发回复条件: {sender}: {message}")
@@ -68,27 +76,38 @@ def main():
         try:
             irc_client.connect()
         except Exception as e:
-            logger.error(f"IRC 连接错误: {e}")
+            if not shutdown_flag.is_set():
+                logger.error(f"IRC 连接错误: {e}")
     
     irc_thread = threading.Thread(target=run_irc, daemon=True)
     irc_thread.start()
     
     # 主线程保持运行，这样可以响应 Ctrl+C
     logger.info("Bot 运行中，按 Ctrl+C 退出...")
-    logger.info("提示: 如果 Ctrl+C 无效，请直接关闭终端窗口")
+    logger.info("提示: Windows 用户可能需要按 Ctrl+C 两次或直接关闭窗口")
+    
     try:
-        while True:
-            time.sleep(0.1)  # 更短的睡眠时间，更快响应
+        # 使用 Event.wait() 而不是 time.sleep()
+        # wait() 可以被 KeyboardInterrupt 中断
+        while not shutdown_flag.is_set():
+            shutdown_flag.wait(timeout=0.1)
     except KeyboardInterrupt:
-        logger.info("\n\n收到中断信号，正在退出...")
+        logger.info("\n\n=== 收到 Ctrl+C 信号 ===")
+        shutdown_flag.set()
+    finally:
+        logger.info("正在关闭...")
         try:
             irc_client.disconnect()
-            logger.info("✓ 已断开连接")
+            logger.info("✓ IRC 连接已断开")
         except Exception as e:
             logger.error(f"断开连接时出错: {e}")
-        finally:
-            import os
-            os._exit(0)  # 强制退出
+        
+        # 等待线程结束（最多等待1秒）
+        irc_thread.join(timeout=1.0)
+        
+        logger.info("✓ 程序已退出")
+        # 强制退出，确保所有线程都停止
+        os._exit(0)
 
 
 if __name__ == "__main__":

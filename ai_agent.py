@@ -41,7 +41,18 @@ class AIAgent:
         if bot_nickname.lower() in message_lower:
             return True
         
-        # 2. 使用 AI 判断是否需要参与对话
+        # 2. 对常见问候语快速响应
+        greetings = [
+            "大家好", "有人么", "有人吗", "在吗", "在不在",
+            "hello", "hi", "hey", "anyone", "anyone here",
+            "有没有人", "人呢", "都在吗"
+        ]
+        for greeting in greetings:
+            if greeting in message_lower:
+                logger.info(f"检测到问候语，将回复: {message[:50]}...")
+                return True
+        
+        # 3. 使用 AI 判断是否需要参与对话
         try:
             # 构建判断提示
             judge_prompt = f"""你是一个 IRC 聊天室中的 AI 助手。请判断以下消息是否需要你参与回复。
