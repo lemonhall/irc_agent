@@ -1,0 +1,11 @@
+[project]
+name = "irc-agent"
+version = "0.1.0"
+description = "AI Agent for IRC collaboration"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "openai>=1.0.0",
+    "miniirc>=1.9.0",
+    "python-dotenv>=1.1.1",
+]
