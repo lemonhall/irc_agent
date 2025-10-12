@@ -9,6 +9,7 @@ logger = logging.getLogger(__name__)
 class AIAgent:
     """基于 OpenAI 的 AI Agent"""
     
+    import random
     def __init__(self, openai_config: OpenAIConfig, agent_config: AgentConfig):
         self.openai_config = openai_config
         self.agent_config = agent_config
@@ -16,13 +17,13 @@ class AIAgent:
             api_key=openai_config.api_key,
             base_url=openai_config.base_url
         )
-        
         # 对话历史（简单实现，可以后续优化为更复杂的记忆系统）
         self.conversation_history: list[dict] = [
             {"role": "system", "content": agent_config.system_prompt}
         ]
         self.max_history = 20  # 保留最近的对话
-        
+        # 随机最大 bot 连续轮数（1~3）
+        self.max_bot_turns = self.random.randint(1, 3)
         # 提前触发 client 初始化，避免在多线程环境中首次调用时出错
         try:
             _ = self.client.models
@@ -43,11 +44,12 @@ class AIAgent:
             if msg["role"] == "assistant":
                 consecutive_bot_turns += 1
             elif msg["role"] == "user" and "lemonhall" in msg["content"]:
+                # 人类发言，重置最大轮数
+                self.max_bot_turns = self.random.randint(1, 3)
                 break
-        
-        # 如果已经连续3轮以上，且不是人类发言，则不回复
-        if consecutive_bot_turns >= 3 and sender != "lemonhall":
-            logger.info(f"已连续对话 {consecutive_bot_turns} 轮，暂停回复等待人类")
+        # 如果已经达到最大轮数，且不是人类发言，则不回复
+        if consecutive_bot_turns >= self.max_bot_turns and sender != "lemonhall":
+            logger.info(f"已连续对话 {consecutive_bot_turns} 轮（最大{self.max_bot_turns}），暂停回复等待人类")
             return False
         
         # 1. 如果直接提及 bot 名字，必须回复
