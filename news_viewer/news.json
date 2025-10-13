@@ -1,0 +1,293 @@
+{
+  "update_time": "2025-10-14 00:04:59",
+  "categories": [
+    {
+      "id": "world",
+      "name": "🌍 世界新闻",
+      "news": [
+        {
+          "title": "Live Updates: Hostages and Palestinian Prisoners Are Freed as Trump Hails ‘Historic Dawn’ in Mideast",
+          "link": "https://www.nytimes.com/live/2025/10/12/world/israel-gaza-hostages-trump",
+          "pubdate": "Mon, 13 Oct 2025 16:03:00 +0000",
+          "title_cn": "人质与巴勒斯坦囚犯获释 特朗普盛赞中东\"历史性黎明\""
+        },
+        {
+          "title": "Why Now? The Lost Chances to Reach a Hostage Deal, and a Cease-Fire, Months Ago",
+          "link": "https://www.nytimes.com/2025/10/12/us/politics/lost-chances-hostage-deal-gaza-israel.html",
+          "pubdate": "Mon, 13 Oct 2025 03:49:11 +0000",
+          "title_cn": "错失良机：数月前达成人质协议与停火的可能性分析"
+        },
+        {
+          "title": "To Inflict Pain on Russians, Ukraine’s Drones Zero In on Oil Refineries",
+          "link": "https://www.nytimes.com/2025/10/13/world/europe/ukraine-drones-russia-oil-refineries.html",
+          "pubdate": "Mon, 13 Oct 2025 10:34:02 +0000",
+          "title_cn": "乌克兰无人机精准打击俄炼油厂以施加压力"
+        },
+        {
+          "title": "China Hosts a Summit on Women’s Rights, While Stifling Activism",
+          "link": "https://www.nytimes.com/2025/10/13/world/asia/china-womens-rights-feminism.html",
+          "pubdate": "Mon, 13 Oct 2025 07:54:22 +0000",
+          "title_cn": "中国举办妇女权益峰会同时压制维权活动"
+        },
+        {
+          "title": "Why Ukraine Is Betting on Strikes Deep Inside Russia",
+          "link": "https://www.nytimes.com/2025/10/13/world/europe/ukraine-long-range-strikes-russia.html",
+          "pubdate": "Mon, 13 Oct 2025 09:02:09 +0000",
+          "title_cn": "乌克兰为何选择深入俄境内实施军事打击"
+        }
+      ]
+    },
+    {
+      "id": "asia",
+      "name": "� 亚太新闻",
+      "news": [
+        {
+          "title": "China Hosts a Summit on Women’s Rights, While Stifling Activism",
+          "link": "https://www.nytimes.com/2025/10/13/world/asia/china-womens-rights-feminism.html",
+          "pubdate": "Mon, 13 Oct 2025 07:54:22 +0000",
+          "title_cn": "中国举办妇女权益峰会同时压制维权活动"
+        },
+        {
+          "title": "Cars to Fighter Jets: China’s New Export Curbs May Level a Heavy Blow Worldwide",
+          "link": "https://www.nytimes.com/2025/10/12/business/china-rare-earth-export-controls.html",
+          "pubdate": "Sun, 12 Oct 2025 17:23:38 +0000",
+          "title_cn": "中国出口管制从汽车到战机或重创全球"
+        },
+        {
+          "title": "Bangladesh Detains Army Officers Accused of Crimes Under Previous Regime",
+          "link": "https://www.nytimes.com/2025/10/12/world/asia/bangladesh-arrests-hasina-crimes.html",
+          "pubdate": "Sun, 12 Oct 2025 15:38:40 +0000",
+          "title_cn": "孟加拉国拘留涉前政权罪行的军方官员"
+        },
+        {
+          "title": "Border Clash Between Afghanistan and Pakistan Threatens a Wider Conflict",
+          "link": "https://www.nytimes.com/2025/10/12/world/asia/afghanistan-pakistan-violence-conflict.html",
+          "pubdate": "Mon, 13 Oct 2025 00:30:54 +0000",
+          "title_cn": "阿富汗巴基斯坦边境冲突恐引发更广泛战火"
+        },
+        {
+          "title": "Social Media Restrictions and 2-Day Internet Shutdown Rattle Afghanistan",
+          "link": "https://www.nytimes.com/2025/10/12/world/asia/afghanistan-social-media-internet-shutdown.html",
+          "pubdate": "Sun, 12 Oct 2025 17:12:07 +0000",
+          "title_cn": "社交媒体限制及两日断网震动阿富汗社会"
+        }
+      ]
+    },
+    {
+      "id": "americas",
+      "name": "🗺️ 美洲新闻",
+      "news": [
+        {
+          "title": "‘Really Big’ Cascadia Earthquake Could Trigger San Andreas Fault Activity",
+          "link": "https://www.nytimes.com/2025/10/12/science/earthquake-san-andreas-cascadia.html",
+          "pubdate": "Sun, 12 Oct 2025 09:01:16 +0000",
+          "title_cn": "卡斯卡迪亚强震或引发圣安德烈亚斯断层活动"
+        },
+        {
+          "title": "Trump Is Blowing Up Boats Off Venezuela. Could Mexico’s Cartels Be Next?",
+          "link": "https://www.nytimes.com/2025/10/12/world/americas/mexico-drugs-venezuela-us-military.html",
+          "pubdate": "Sun, 12 Oct 2025 16:12:51 +0000",
+          "title_cn": "特朗普炸毁委内瑞拉船只 墨西哥贩毒集团或成下个目标"
+        },
+        {
+          "title": "Bolivia Pushes to Reclaim the Coca Leaf From the Stigma of Cocaine",
+          "link": "https://www.nytimes.com/2025/10/12/world/americas/bolivia-coca-plant-leaf-cocaine.html",
+          "pubdate": "Mon, 13 Oct 2025 15:35:39 +0000",
+          "title_cn": "玻利维亚推动古柯叶摆脱可卡因污名"
+        },
+        {
+          "title": "A New Book Asks, What Is Canada?",
+          "link": "https://www.nytimes.com/2025/10/11/world/canada/canada-elbows-up.html",
+          "pubdate": "Sun, 12 Oct 2025 15:23:39 +0000",
+          "title_cn": "新书《何为加拿大》引发国家认同探讨"
+        },
+        {
+          "title": "Heavy Rain, Floods and Landslides in Mexico Kill at Least 41",
+          "link": "https://www.nytimes.com/2025/10/11/world/americas/mexico-floods-rain.html",
+          "pubdate": "Sun, 12 Oct 2025 06:07:53 +0000",
+          "title_cn": "墨西哥暴雨引发洪灾山体滑坡致41人遇难"
+        }
+      ]
+    },
+    {
+      "id": "us",
+      "name": "🗽 美国新闻",
+      "news": [
+        {
+          "title": "Small Plane Crashes on Massachusetts Highway, Killing 2",
+          "link": "https://www.nytimes.com/2025/10/13/us/highway-plane-crash-massachusetts.html",
+          "pubdate": "Mon, 13 Oct 2025 15:49:15 +0000",
+          "title_cn": "马萨诸塞州小型飞机高速公路坠毁致2人遇难"
+        },
+        {
+          "title": "Miami Says Farewell to Its Seaquarium",
+          "link": "https://www.nytimes.com/2025/10/13/us/miami-seaquarium-closing.html",
+          "pubdate": "Mon, 13 Oct 2025 14:08:56 +0000",
+          "title_cn": "迈阿密海洋馆正式闭馆谢幕"
+        },
+        {
+          "title": "Originalist ‘Bombshell’ Complicates Case on Trump’s Power to Fire Officials",
+          "link": "https://www.nytimes.com/2025/10/13/us/politics/originalism-trump-supreme-court-unitary-executive.html",
+          "pubdate": "Mon, 13 Oct 2025 12:44:21 +0000",
+          "title_cn": "原旨主义\"炸弹\"复杂化特朗普解职权案"
+        },
+        {
+          "title": "Fragments of 2003 Cable Detail Torture in a Secret C.I.A. Prison",
+          "link": "https://www.nytimes.com/2025/10/13/us/politics/cia-torture-black-sites.html",
+          "pubdate": "Mon, 13 Oct 2025 09:09:37 +0000",
+          "title_cn": "2003年密电披露中情局黑狱酷刑细节"
+        },
+        {
+          "title": "Dozens Rescued in Remote Alaskan Villages in Storm That Swept Away Homes",
+          "link": "https://www.nytimes.com/2025/10/13/us/alaska-flooding-rescues.html",
+          "pubdate": "Mon, 13 Oct 2025 04:00:37 +0000",
+          "title_cn": "阿拉斯加数十居民在房屋损毁风暴中获救"
+        }
+      ]
+    },
+    {
+      "id": "middleeast",
+      "name": "🕌 中东新闻",
+      "news": [
+        {
+          "title": "Gazans confront a devastating reality: ‘There’s nothing to be happy about.’",
+          "link": "https://www.nytimes.com/live/2025/10/12/world/israel-gaza-hostages-trump/gazans-confront-a-devastating-reality-theres-nothing-to-be-happy-about",
+          "pubdate": "Mon, 13 Oct 2025 11:38:07 +0000",
+          "title_cn": "加沙民众面临残酷现实：\"毫无欢欣可言\""
+        },
+        {
+          "title": "Joy, relief and long-awaited phone calls as hostages are released.",
+          "link": "https://www.nytimes.com/live/2025/10/12/world/israel-gaza-hostages-trump/joy-relief-and-long-awaited-phone-calls-as-hostages-families-greet-their-loved-ones",
+          "pubdate": "Mon, 13 Oct 2025 10:46:48 +0000",
+          "title_cn": "人质获释迎来喜悦与期盼已久的通话"
+        },
+        {
+          "title": "See excerpts from Trump’s prepared remarks to the Knesset.",
+          "link": "https://www.nytimes.com/live/2025/10/12/world/israel-gaza-hostages-trump/see-excerpts-from-trumps-prepared-remarks-to-the-knesset",
+          "pubdate": "Mon, 13 Oct 2025 10:21:29 +0000",
+          "title_cn": "特朗普在以色列议会演讲节选内容公布"
+        },
+        {
+          "title": "Trump and Egypt’s President Set To Host Sharm el-Sheikh ‘Peace Summit’",
+          "link": "https://www.nytimes.com/2025/10/13/world/middleeast/netanyahu-peace-summit-egypt-sharm-el-sheikh.html",
+          "pubdate": "Mon, 13 Oct 2025 13:48:29 +0000",
+          "title_cn": "特朗普与埃及总统将共主持沙姆沙伊赫和平峰会"
+        },
+        {
+          "title": "‘Real Progress’ Is Made in Delivering Aid to Gaza, U.N. Says",
+          "link": "https://www.nytimes.com/2025/10/13/world/middleeast/aid-gaza-un.html",
+          "pubdate": "Mon, 13 Oct 2025 08:13:50 +0000",
+          "title_cn": "联合国称加沙人道援助取得实质进展"
+        }
+      ]
+    },
+    {
+      "id": "economy",
+      "name": "💰 经济新闻",
+      "news": [
+        {
+          "title": "Black Unemployment Is Surging Again. This Time Is Different.",
+          "link": "https://www.nytimes.com/2025/10/12/business/economy/black-unemployment-federal-layoffs-diversity-initiatives.html",
+          "pubdate": "Sun, 12 Oct 2025 18:15:10 +0000",
+          "title_cn": "黑人失业率再度飙升，此次情况不同以往"
+        },
+        {
+          "title": "Trump Threatens 100% Tariffs on Chinese Goods",
+          "link": "https://www.nytimes.com/2025/10/10/us/politics/trump-xi-china-tariffs-rare-earth.html",
+          "pubdate": "Sat, 11 Oct 2025 14:50:11 +0000",
+          "title_cn": "特朗普威胁对中国商品征收100%关税"
+        },
+        {
+          "title": "Riding the Wild Wave of Crypto Coverage",
+          "link": "https://www.nytimes.com/2025/10/10/insider/cryptocurrency-reporting.html",
+          "pubdate": "Fri, 10 Oct 2025 07:00:05 +0000",
+          "title_cn": "加密货币报道掀起市场波澜"
+        },
+        {
+          "title": "Inflation Report Will Be Released Despite Shutdown",
+          "link": "https://www.nytimes.com/2025/10/09/business/economy/inflation-report-release-shutdown.html",
+          "pubdate": "Sat, 11 Oct 2025 05:39:02 +0000",
+          "title_cn": "政府停摆期间通胀报告仍将发布"
+        },
+        {
+          "title": "Carney and Trump: A Collision Avoided, Save for a Nasty Comment or Two",
+          "link": "https://www.nytimes.com/2025/10/07/us/politics/carney-trump-canada-trade-relationship.html",
+          "pubdate": "Tue, 07 Oct 2025 23:47:58 +0000",
+          "title_cn": "卡尼与特朗普交锋避实就虚，仅存数句恶评"
+        }
+      ]
+    },
+    {
+      "id": "technology",
+      "name": "💻 科技新闻",
+      "news": [
+        {
+          "title": "How ‘TBPN’ Became Silicon Valley’s Newest Obsession",
+          "link": "https://www.nytimes.com/2025/10/11/technology/tbpn-silicon-valley.html",
+          "pubdate": "Sat, 11 Oct 2025 09:00:47 +0000",
+          "title_cn": "TBPN如何成为硅谷新宠"
+        },
+        {
+          "title": "A Mystery C.E.O. and Billions in Sales: Is China Buying Banned Nvidia Chips?",
+          "link": "https://www.nytimes.com/2025/10/09/technology/nvidia-chips-china-megaspeed.html",
+          "pubdate": "Thu, 09 Oct 2025 20:25:47 +0000",
+          "title_cn": "神秘CEO与巨额销售：中国是否采购禁售英伟达芯片？"
+        },
+        {
+          "title": "Intel’s Big Bet: Inside the Chipmaker’s Make-or-Break Factory",
+          "link": "https://www.nytimes.com/2025/10/09/technology/intel-chip-factory-fab52.html",
+          "pubdate": "Thu, 09 Oct 2025 13:00:11 +0000",
+          "title_cn": "英特尔豪赌：探秘芯片巨头的生死工厂"
+        },
+        {
+          "title": "ChatGPT’s Platform Play + a Trillion-Dollar GPU Empire + the Queen of Slop",
+          "link": "https://www.nytimes.com/2025/10/10/podcasts/hardfork-openai-devday-amd.html",
+          "pubdate": "Fri, 10 Oct 2025 11:00:06 +0000",
+          "title_cn": "ChatGPT平台战略+万亿GPU帝国+数据女王"
+        },
+        {
+          "title": "OpenAI Inks Deal With Broadcom to Design Its Own Chips for A.I.",
+          "link": "https://www.nytimes.com/2025/10/13/technology/openai-broadcom-chips-deal.html",
+          "pubdate": "Mon, 13 Oct 2025 13:00:07 +0000",
+          "title_cn": "OpenAI与博通签约自主研发AI芯片"
+        }
+      ]
+    },
+    {
+      "id": "science",
+      "name": "🔬 科学新闻",
+      "news": [
+        {
+          "title": "‘Really Big’ Cascadia Earthquake Could Trigger San Andreas Fault Activity",
+          "link": "https://www.nytimes.com/2025/10/12/science/earthquake-san-andreas-cascadia.html",
+          "pubdate": "Sun, 12 Oct 2025 09:01:16 +0000",
+          "title_cn": "强震或致圣安德烈亚斯断层活动加剧"
+        },
+        {
+          "title": "How to Deal With 30 to 50 Feral Hogs",
+          "link": "https://www.nytimes.com/2025/10/11/science/texas-feral-hogs.html",
+          "pubdate": "Sat, 11 Oct 2025 09:00:25 +0000",
+          "title_cn": "应对30至50头野猪侵扰指南"
+        },
+        {
+          "title": "Every Artist Has a Favorite Subject. For Some, That’s Math.",
+          "link": "https://www.nytimes.com/2025/10/10/science/mathematics-art-roelofs.html",
+          "pubdate": "Mon, 13 Oct 2025 15:13:35 +0000",
+          "title_cn": "数学成艺术家创作新灵感源泉"
+        },
+        {
+          "title": "Why the Green Cheese Turned White",
+          "link": "https://www.nytimes.com/2025/10/09/science/why-the-green-cheese-turned-white.html",
+          "pubdate": "Thu, 09 Oct 2025 09:04:29 +0000",
+          "title_cn": "绿色奶酪变白现象成因解析"
+        },
+        {
+          "title": "Nobel Prizes This Year Offer Three Cheers for Slow Science",
+          "link": "https://www.nytimes.com/2025/10/09/science/nobel-prizes-science-basic-research.html",
+          "pubdate": "Thu, 09 Oct 2025 22:35:10 +0000",
+          "title_cn": "诺奖青睐\"慢科学\"折射研究新趋势"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📰 纽约时报 - 今日要闻</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .update-time {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .refresh-btn {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid white;
+            color: white;
+            padding: 10px 20px;
+            font-size: 1em;
+            border-radius: 25px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.3s;
+        }
+
+        .refresh-btn:hover {
+            background: white;
+            color: #667eea;
+        }
+
+        .category {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .category-title {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            color: #333;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .news-item {
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+            background: #f8f9fa;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .news-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .news-number {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            background: #667eea;
+            color: white;
+            text-align: center;
+            line-height: 30px;
+            border-radius: 50%;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        .news-title-cn {
+            font-size: 1.2em;
+            color: #333;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .news-title-en {
+            font-size: 0.9em;
+            color: #666;
+            font-style: italic;
+            margin-bottom: 8px;
+        }
+
+        .news-link {
+            display: inline-block;
+            margin-top: 5px;
+            color: #667eea;
+            text-decoration: none;
+            font-size: 0.85em;
+            transition: color 0.3s;
+        }
+
+        .news-link:hover {
+            color: #764ba2;
+            text-decoration: underline;
+        }
+
+        .loading {
+            text-align: center;
+            color: white;
+            font-size: 1.5em;
+            padding: 50px;
+        }
+
+        .error {
+            background: #ff6b6b;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .category-title {
+                font-size: 1.4em;
+            }
+
+            .news-title-cn {
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📰 纽约时报 - 今日要闻</h1>
+            <div class="update-time" id="updateTime">加载中...</div>
+            <button class="refresh-btn" onclick="loadNews()">🔄 刷新</button>
+        </div>
+
+        <div id="newsContent" class="loading">
+            正在加载新闻...
+        </div>
+    </div>
+
+    <script>
+        async function loadNews() {
+            const contentDiv = document.getElementById('newsContent');
+            const updateTimeDiv = document.getElementById('updateTime');
+
+            try {
+                contentDiv.innerHTML = '<div class="loading">正在加载新闻...</div>';
+
+                const response = await fetch('news.json?' + new Date().getTime());
+                
+                if (!response.ok) {
+                    throw new Error('无法加载新闻数据');
+                }
+
+                const data = await response.json();
+
+                // 更新时间
+                updateTimeDiv.textContent = `更新时间：${data.update_time}`;
+
+                // 渲染新闻
+                let html = '';
+
+                data.categories.forEach(category => {
+                    html += `
+                        <div class="category">
+                            <h2 class="category-title">${category.name}</h2>
+                    `;
+
+                    category.news.forEach((item, index) => {
+                        html += `
+                            <div class="news-item">
+                                <span class="news-number">${index + 1}</span>
+                                <div style="display: inline-block; width: calc(100% - 50px); vertical-align: top;">
+                                    <div class="news-title-cn">${item.title_cn}</div>
+                                    <div class="news-title-en">${item.title}</div>
+                                    ${item.link ? `<a href="${item.link}" target="_blank" class="news-link">🔗 阅读原文</a>` : ''}
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    html += '</div>';
+                });
+
+                contentDiv.innerHTML = html;
+
+            } catch (error) {
+                contentDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ 加载失败</h3>
+                        <p>${error.message}</p>
+                        <p style="margin-top: 10px; font-size: 0.9em;">
+                            请确保已运行 <code>python fetch_news.py</code> 生成新闻数据
+                        </p>
+                    </div>
+                `;
+                console.error('加载新闻失败:', error);
+            }
+        }
+
+        // 页面加载时自动获取新闻
+        loadNews();
+
+        // 每5分钟自动刷新一次
+        setInterval(loadNews, 5 * 60 * 1000);
+    </script>
+</body>
+</html>
