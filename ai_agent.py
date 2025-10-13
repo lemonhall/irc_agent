@@ -8,16 +8,18 @@ from datetime import datetime
 from openai import OpenAI
 from config import OpenAIConfig, AgentConfig
 from weather_service import get_city_weather
+from news_fetcher import format_news_for_injection
 
 logger = logging.getLogger(__name__)
 
 
-def format_current_time(location: str = None) -> str:
+def format_current_time(location: str = None, include_news: bool = True) -> str:
     """
-    格式化当前时间，包括星期几和天气
+    格式化当前时间，包括星期几、天气和重要新闻
     
     Args:
         location: 城市名称（用于获取天气），如 "北京"、"上海"、"深圳"
+        include_news: 是否包含今日新闻
     
     Returns:
         格式化的时间字符串，如：2025年10月13日 星期二 22点45分，北京☀️晴朗，气温12°C
@@ -37,6 +39,16 @@ def format_current_time(location: str = None) -> str:
         except Exception as e:
             logger.warning(f"获取天气信息失败: {e}")
             # 获取天气失败不影响时间显示
+    
+    # 添加今日重要新闻
+    if include_news:
+        try:
+            news_info = format_news_for_injection()
+            if news_info:
+                time_str += f"\n[今日要闻：{news_info}]"
+        except Exception as e:
+            logger.warning(f"获取新闻信息失败: {e}")
+            # 获取新闻失败不影响时间显示
     
     return time_str
 
