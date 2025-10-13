@@ -1,6 +1,6 @@
 # IRC AI Agent
 
-一个实验性项目，让 AI Agent 加入 IRC 聊天室，与人类和其他 agent 协作完成任务。
+一个实验性的多 AI Agent IRC 聊天协作系统。三个具有不同人格的 AI Agent（明轩、悦然、志远）同时连接到同一个 IRC 频道，使用不同的 LLM 模型和人格设定进行自然对话。
 
 ## 🎭 三个 AI Agent 介绍
 
@@ -24,124 +24,171 @@
 
 ## 功能特性
 
-- 🤖 基于多个 AI 模型（OpenAI + Ling-1T）
-- 💬 连接到现有 IRC 服务器和频道
-- 🎯 支持关键词触发和 @提及响应
-- 📝 维护对话上下文（最近 20 条消息）
-- 🔧 灵活的配置系统
-- 🕐 自动注入当前时间信息
-- 🌍 三个 Agent 分布在不同城市
+- 🤖 **多模型支持**：OpenAI gpt-4o-mini（明轩、悦然）+ Ling-1T（志远）
+- 🎭 **三个独立进程**：每个 Agent 通过独立的主程序运行，配置隔离
+- 🧠 **智能响应判断**：使用 AI 判断是否应该回应（非简单关键词匹配）
+- � **人类检测机制**：区分人类用户和 Bot，防止无限对话循环
+- � **动态时间注入**：每次 API 调用时自动注入当前时间信息
+- 🎬 **括号清理系统**：自动移除 AI 生成的舞台指示和元评论
+- 📝 **对话历史管理**：保留最近 20 条消息，智能控制连续对话轮数
+- 🌍 **地域人格设定**：三个 Agent 分布在北京、深圳、上海
 
 ## 快速开始
 
 ### 1. 安装依赖
 
 ```bash
-uv add openai miniirc
+uv add openai miniirc python-dotenv
 ```
 
 ### 2. 配置环境变量
 
-复制 `.env.example` 为 `.env` 并填入你的 OpenAI API Key：
+创建 `.env` 文件并配置必要的环境变量：
 
 ```bash
-cp .env.example .env
+# OpenAI API (明轩/悦然)
+OPENAI_API_KEY=sk-your-openai-api-key
+OPENAI_BASE_URL=https://api.openai.com/v1  # 可选
+
+# Ling API (志远)
+LING_API_KEY=your-ling-api-key
+LING_BASE_URL=https://api.tbox.cn/api/llm/v1/
+
+# IRC 配置
+IRC_SERVER=irc.lemonhall.me
+IRC_PORT=6667
+IRC_CHANNEL=ai-collab-test
+IRC_SASL_USERNAME=  # 可选 SASL 认证
+IRC_SASL_PASSWORD=  # 可选 SASL 认证
 ```
 
-编辑 `.env` 文件：
-```
-OPENAI_API_KEY=sk-your-actual-api-key
-```
+### 3. 启动所有 Agent
 
-### 3. 配置 IRC 连接
-
-编辑 `config.py` 文件，修改 IRC 连接参数：
-
-```python
-@dataclass
-class IRCConfig:
-    server: str = "irc.libera.chat"  # 你的 IRC 服务器
-    port: int = 6667
-    nickname: str = "my_ai_bot"      # Bot 的昵称
-    channel: str = "#your-channel"    # 要加入的频道
-    use_ssl: bool = False
-```
-
-### 4. 运行
-
-```bash
+```powershell
+# 启动明轩（专业理性型）
 uv run python main.py
+
+# 启动悦然（活泼幽默型）
+uv run python main2.py
+# 或使用脚本：.\start_bot2.ps1
+
+# 启动志远（沉稳务实型）
+uv run python main3.py
+# 或使用脚本：.\start_bot3.ps1
 ```
+
+## 核心技术实现
+
+### 智能响应机制
+- **AI 驱动判断**：使用 LLM 判断是否应该回应（非简单关键词匹配）
+- **人类检测**：通过白名单 `KNOWN_BOTS = ["mingxuan", "yueran", "zhiyuan"]` 识别人类用户
+- **防刷屏控制**：随机 1-3 轮的连续对话限制，达到阈值后只对人类或 @ 提及响应
+- **降级机制**：AI 判断失败时降级到关键词触发
+
+### 对话质量保证
+- **时间信息注入**：每次 API 调用时动态添加当前时间到系统提示
+- **括号清理**：自动移除 AI 生成的舞台指示，如 `(注：xxx)` 或 `(思考片刻)`
+- **历史管理**：保留系统提示 + 最近 19 条消息，智能轮数提示
 
 ## 使用方法
 
-Bot 会在以下情况下响应：
+Agent 会在以下情况下智能响应：
 
-1. **提及 Bot 名字**：在消息中包含 bot 的昵称
+1. **直接提及**：消息中包含 Agent 昵称
    ```
-   my_ai_bot: 你好！
+   明轩，你觉得这个方案怎么样？
+   @yueran 有什么想法吗？
    ```
 
-2. **触发关键词**：消息包含预设的关键词（默认：help, 帮助, 协作）
+2. **问候语检测**：识别各种问候和称呼
    ```
-   有人能帮助我吗？
+   大家好！
+   有人吗？
+   各位晚上好
+   ```
+
+3. **AI 智能判断**：基于上下文和对话需要自动参与
+   ```
+   这个技术问题很有趣...
+   刚才的讨论让我想到...
    ```
 
 ## 项目结构
 
 ```
 irc_agent/
-├── main.py           # 主程序入口
-├── config.py         # 配置文件
-├── irc_client.py     # IRC 客户端封装
-├── ai_agent.py       # AI Agent 实现
-├── .env.example      # 环境变量示例
-└── README.md         # 本文件
+├── main.py           # 明轩主程序
+├── main2.py          # 悦然主程序  
+├── main3.py          # 志远主程序
+├── config.py         # 明轩配置文件
+├── config2.py        # 悦然配置文件
+├── config3.py        # 志远配置文件
+├── irc_client.py     # IRC 客户端封装（共享）
+├── ai_agent.py       # AI Agent 实现（共享）
+├── start_bot2.ps1    # 悦然启动脚本
+├── start_bot3.ps1    # 志远启动脚本
+├── test_*.py         # 单元测试文件
+├── CHANGELOG_*.md    # 功能更新日志
+└── .env              # 环境变量配置
 ```
 
-## 自定义配置
+## 开发和测试
 
-### 修改 Agent 行为
+### 单独测试功能
+```powershell
+# 测试括号清理功能
+uv run python test_clean_brackets.py
 
-在 `config.py` 中的 `AgentConfig` 类：
+# 测试人类用户检测
+uv run python test_user_detection.py
 
-```python
-@dataclass
-class AgentConfig:
-    trigger_on_mention: bool = True  # 是否在提及时响应
-    trigger_keywords: list[str] = None  # 触发关键词列表
-    system_prompt: str = """..."""  # 系统提示词
+# 测试 Ling-1T API 连接
+uv run python test_ling.py
+
+# 测试时间注入功能
+uv run python test_time_injection.py
 ```
 
-### 修改 OpenAI 模型
+### 添加新 Agent
+1. 复制 `configX.py` 和 `mainX.py`（X 为数字）
+2. 修改 `IRCConfig.nickname` 和 `AgentConfig.system_prompt`
+3. **重要**：更新 `ai_agent.py` 中的 `KNOWN_BOTS` 列表
+4. 创建对应的 `start_botX.ps1` 启动脚本
 
-在 `config.py` 中的 `OpenAIConfig` 类：
+## 系统提示编写准则
 
-```python
-@dataclass
-class OpenAIConfig:
-    model: str = "gpt-4o-mini"  # 或 "gpt-4o", "gpt-3.5-turbo" 等
-    max_tokens: int = 500
-    temperature: float = 0.7
-```
+在编写或修改 Agent 的 `system_prompt` 时，遵循以下关键约定：
 
-## 下一步开发
+- **严禁括号**：强调 "❌ 绝对不要用括号写旁白或舞台指示"
+- **自然对话**：强调 "你是真实的聊天参与者，不是在演剧本"
+- **暂停时机**：明确何时应该停止回复（如 "好的"、"谢谢" 等终止词）
+- **时间感知**：不需要在提示中说明时间注入（系统自动处理）
 
-这是一个 MVP 版本，可以扩展的方向：
+## 常见陷阱和注意事项
 
-- [ ] 多 Agent 协作机制
-- [ ] 任务分配和跟踪
-- [ ] 更复杂的记忆系统（向量数据库）
-- [ ] 支持命令系统（如 !reset, !status）
+1. **忘记更新 KNOWN_BOTS**：添加新 Agent 后必须在 `ai_agent.py` 中更新列表，否则会被识别为人类
+2. **大小写敏感**：用户名比较使用 `.lower()`，但配置文件中的昵称本身区分大小写
+3. **API 配置混淆**：志远使用 `LING_API_KEY`，其他两个用 `OPENAI_API_KEY`
+4. **强制退出**：使用 `os._exit(0)` 强制退出，因为 miniirc 的线程可能阻塞普通退出
+5. **括号清理过激**：如果 AI 需要在回复中使用括号（如数学表达式），需要修改 `remove_parenthetical_content()`
+
+## 技术要求
+
+- **Python**：>= 3.13
+- **包管理器**：推荐使用 `uv`
+- **核心依赖**：
+  - `openai`：OpenAI SDK（兼容 Ling API）
+  - `miniirc`：轻量级 IRC 客户端库
+  - `python-dotenv`：环境变量加载
+
+## 未来扩展方向
+
+- [ ] 向量数据库集成（长期记忆）
+- [ ] 任务分配和跟踪系统
+- [ ] 多频道支持
+- [ ] Web 监控界面
+- [ ] 命令系统（如 `!reset`、`!status`）
 - [ ] 日志和对话记录持久化
-- [ ] Web 界面监控
-- [ ] 支持多个频道
-
-## 注意事项
-
-- 确保你有权限在目标 IRC 频道使用 Bot
-- 注意 API 调用成本，建议使用 gpt-4o-mini
-- Bot 会记住最近 20 条对话历史
 
 ## License
 
