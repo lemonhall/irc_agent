@@ -31,6 +31,10 @@ class AIAgent:
     """基于 OpenAI 的 AI Agent"""
     
     import random
+    
+    # 已知的 bot 昵称列表
+    KNOWN_BOTS = ["mingxuan", "yueran", "zhiyuan"]
+    
     def __init__(self, openai_config: OpenAIConfig, agent_config: AgentConfig):
         self.openai_config = openai_config
         self.agent_config = agent_config
@@ -57,6 +61,9 @@ class AIAgent:
         if sender == bot_nickname:
             return False
         
+        # 判断发送者是否为人类（不在已知 bot 列表中，大小写不敏感）
+        is_human = sender.lower() not in [bot.lower() for bot in self.KNOWN_BOTS]
+        
         message_lower = message.lower()
         
         # 0. 检查连续对话轮数 - 如果太多轮，只有被 @ 或人类发言才回复
@@ -64,12 +71,19 @@ class AIAgent:
         for msg in reversed(self.conversation_history[1:]):  # 跳过系统提示
             if msg["role"] == "assistant":
                 consecutive_bot_turns += 1
-            elif msg["role"] == "user" and "lemonhall" in msg["content"]:
-                # 人类发言，重置最大轮数
-                self.max_bot_turns = self.random.randint(1, 3)
-                break
+            else:
+                # 遇到任何用户消息（包括人类和其他bot），检查是否为人类
+                for bot_name in self.KNOWN_BOTS:
+                    if bot_name in msg["content"]:
+                        # 是 bot 消息，继续计数
+                        break
+                else:
+                    # 是人类消息，重置最大轮数并停止计数
+                    self.max_bot_turns = self.random.randint(1, 3)
+                    break
+        
         # 如果已经达到最大轮数，且不是人类发言，则不回复
-        if consecutive_bot_turns >= self.max_bot_turns and sender != "lemonhall":
+        if consecutive_bot_turns >= self.max_bot_turns and not is_human:
             logger.info(f"已连续对话 {consecutive_bot_turns} 轮（最大{self.max_bot_turns}），暂停回复等待人类")
             return False
         
@@ -173,9 +187,17 @@ class AIAgent:
         for msg in reversed(self.conversation_history[1:]):  # 跳过系统提示
             if msg["role"] == "assistant":
                 consecutive_bot_turns += 1
-            elif msg["role"] == "user" and "lemonhall" in msg["content"]:
-                # 如果遇到人类发言，重置计数
-                break
+            else:
+                # 遇到用户消息，检查是否为人类
+                is_human_msg = True
+                for bot_name in self.KNOWN_BOTS:
+                    if bot_name in msg["content"]:
+                        # 是 bot 消息
+                        is_human_msg = False
+                        break
+                if is_human_msg:
+                    # 如果遇到人类发言，停止计数
+                    break
         
         # 在最后一条消息中添加对话轮数提示
         context_note = f"\n\n[系统提示：这是最近第 {consecutive_bot_turns + 1} 轮 bot 连续对话。如果已经3轮以上，应该暂停让人类参与]"
