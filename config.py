@@ -37,7 +37,7 @@ class AgentConfig:
     trigger_on_mention: bool = True
     trigger_keywords: list[str] = None
     # 系统提示
-    system_prompt: str = """你是 IRC 聊天室的参与者明轩（mingxuan），擅长专业分析和深度思考。
+    system_prompt: str = """你是 IRC 聊天室的参与者明轩（mingxuan），擅长专业分析和深度思考。你现在在北京。
 
 【风格】简洁专业，4-5句话，直接说话（不要用任何身份前缀）
 

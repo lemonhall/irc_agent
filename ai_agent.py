@@ -1,9 +1,30 @@
 """OpenAI Agent 实现"""
 import logging
+import re
+from datetime import datetime
 from openai import OpenAI
 from config import OpenAIConfig, AgentConfig
 
 logger = logging.getLogger(__name__)
+
+
+def remove_parenthetical_content(text: str) -> str:
+    """
+    移除文本中所有括号及其内容（包括中英文括号）
+    
+    Args:
+        text: 原始文本
+        
+    Returns:
+        清理后的文本
+    """
+    # 移除中文括号及内容
+    text = re.sub(r'[（(][^）)]*[）)]', '', text)
+    # 移除可能遗漏的单个括号
+    text = re.sub(r'[（(）)]', '', text)
+    # 清理多余空格
+    text = re.sub(r'\s+', ' ', text)
+    return text.strip()
 
 
 class AIAgent:
@@ -75,8 +96,14 @@ class AIAgent:
         
         # 3. 使用 AI 判断是否需要参与对话
         try:
+            # 获取当前时间
+            current_time = datetime.now()
+            time_str = f"{current_time.year}年{current_time.month}月{current_time.day}日 {current_time.hour}点{current_time.minute}分"
+            
             # 构建判断提示
             judge_prompt = f"""你是 IRC 聊天室的参与者。判断是否回应这条消息：
+
+[当前时间：{time_str}]
 
 来自 {sender}: "{message}"
 
@@ -154,11 +181,22 @@ class AIAgent:
         context_note = f"\n\n[系统提示：这是最近第 {consecutive_bot_turns + 1} 轮 bot 连续对话。如果已经3轮以上，应该暂停让人类参与]"
         self.conversation_history[-1]["content"] += context_note
         
+        # 更新系统提示，添加当前时间信息
+        current_time = datetime.now()
+        time_info = f"\n\n[当前时间：{current_time.year}年{current_time.month}月{current_time.day}日 {current_time.hour}点{current_time.minute}分]"
+        
+        # 创建包含时间信息的消息列表（不修改原始历史记录中的系统提示）
+        messages_with_time = self.conversation_history.copy()
+        messages_with_time[0] = {
+            "role": "system",
+            "content": self.agent_config.system_prompt + time_info
+        }
+        
         try:
             # 调用 OpenAI API
             response = self.client.chat.completions.create(
                 model=self.openai_config.model,
-                messages=self.conversation_history,
+                messages=messages_with_time,  # 使用包含时间信息的消息列表
                 max_tokens=self.openai_config.max_tokens,
                 temperature=self.openai_config.temperature
             )
@@ -178,14 +216,24 @@ class AIAgent:
                 logger.error(f"API 返回的 content 为空")
                 return "抱歉，我暂时无话可说。"
             
-            # 添加助手回复到历史
+            # 清理括号内容（防止 AI 添加舞台指示或元评论）
+            cleaned_message = remove_parenthetical_content(assistant_message)
+            
+            # 如果清理后为空，使用原消息但记录警告
+            if not cleaned_message:
+                logger.warning(f"清理括号后消息为空，使用原消息: {assistant_message}")
+                cleaned_message = assistant_message
+            elif cleaned_message != assistant_message:
+                logger.info(f"已清理括号内容: {assistant_message[:100]}... -> {cleaned_message[:100]}...")
+            
+            # 添加助手回复到历史（使用清理后的消息）
             self.conversation_history.append({
                 "role": "assistant",
-                "content": assistant_message
+                "content": cleaned_message
             })
             
-            logger.info(f"生成回复: {assistant_message}")
-            return assistant_message
+            logger.info(f"生成回复: {cleaned_message}")
+            return cleaned_message
             
         except Exception as e:
             logger.error(f"调用 OpenAI API 失败: {e}", exc_info=True)
