@@ -1,6 +1,7 @@
 """
 新闻播报文本转语音工具（简化版）
 直接读取 JSON 格式的播报文件生成音频
+使用火山引擎 TTS API
 """
 
 import os
@@ -8,8 +9,13 @@ import json
 import time
 import requests
 import wave
+import base64
+import uuid
 from pathlib import Path
-import dashscope
+from dotenv import load_dotenv
+
+# 加载环境变量
+load_dotenv()
 
 
 class NewsAudioGenerator:
@@ -17,17 +23,24 @@ class NewsAudioGenerator:
     
     def __init__(self):
         """初始化生成器"""
-        self.api_key = os.getenv("DASHSCOPE_API_KEY")
+        # 火山引擎配置
+        self.app_id = os.getenv("VOLCENGINE_APP_ID")
+        self.access_token = os.getenv("VOLCENGINE_ACCESS_TOKEN")
         
-        if not self.api_key:
-            raise ValueError("❌ 未设置DASHSCOPE_API_KEY环境变量")
+        if not self.app_id or not self.access_token:
+            raise ValueError("❌ 未设置VOLCENGINE_APP_ID或VOLCENGINE_ACCESS_TOKEN环境变量")
         
-        self.voice = "Cherry"  # 女声播音员
+        # TTS配置
+        self.tts_url = "https://openspeech.bytedance.com/api/v1/tts"
+        self.cluster = "volcano_tts"
+        self.voice = "ICL_zh_female_zhixingwenwan_tob"  # 知性温婉女声
+        
         print(f"🎤 新闻音频生成器初始化完成 (声音: {self.voice})")
+        print(f"🔑 使用火山引擎 TTS API")
     
     def generate_audio(self, text: str, output_path: Path) -> bool:
         """
-        为文本生成音频
+        为文本生成音频（使用火山引擎TTS）
         
         Args:
             text: 文本内容
@@ -39,51 +52,79 @@ class NewsAudioGenerator:
         try:
             print(f"📝 文本长度: {len(text)} 字符")
             
-            # 调用TTS API
-            response = dashscope.MultiModalConversation.call(
-                model="qwen3-tts-flash",
-                api_key=self.api_key,
-                text=text,
-                voice=self.voice,
-                language_type="Chinese",
-                stream=False
-            )
+            # 构造请求
+            reqid = str(uuid.uuid4())
             
-            # 检查响应
-            if not hasattr(response, 'output') or not hasattr(response.output, 'audio'):
-                print(f"❌ API响应异常: {response}")
+            headers = {
+                "Authorization": f"Bearer;{self.access_token}",
+                "Content-Type": "application/json",
+            }
+            
+            payload = {
+                "app": {
+                    "appid": self.app_id,
+                    "token": "token_ignored_but_required",
+                    "cluster": self.cluster,
+                },
+                "user": {
+                    "uid": "news_broadcast_user"
+                },
+                "audio": {
+                    "voice_type": self.voice,
+                    "encoding": "mp3",
+                    "speed_ratio": 1.0,
+                    "rate": 24000,
+                    "BitRate": 128,
+                },
+                "request": {
+                    "reqid": reqid,
+                    "text": text,
+                    "operation": "query",
+                }
+            }
+            
+            # 调用API
+            response = requests.post(self.tts_url, headers=headers, data=json.dumps(payload), timeout=60)
+            response.raise_for_status()
+            
+            result = response.json()
+            log_id = response.headers.get("X-Tt-Logid")
+            
+            if result.get("code") == 3000:
+                audio_data_base64 = result.get("data")
+                if audio_data_base64:
+                    audio_data = base64.b64decode(audio_data_base64)
+                    
+                    # 保存为MP3文件（改扩展名）
+                    output_path = output_path.with_suffix('.mp3')
+                    with open(output_path, 'wb') as f:
+                        f.write(audio_data)
+                    
+                    # 获取时长
+                    duration_ms = result.get("addition", {}).get("duration", 0)
+                    try:
+                        # 可能是字符串或数字，统一转换
+                        duration_sec = float(duration_ms) / 1000.0
+                    except (ValueError, TypeError):
+                        duration_sec = 0.0
+                    
+                    print(f"✅ 保存成功: {output_path.name} ({duration_sec:.1f}秒)")
+                    if log_id:
+                        print(f"   日志ID: {log_id}")
+                    
+                    return True
+                else:
+                    print(f"❌ API响应但无音频数据")
+                    return False
+            else:
+                print(f"❌ API错误: Code={result.get('code')}, Message={result.get('message')}")
+                if log_id:
+                    print(f"   日志ID: {log_id}")
                 return False
-            
-            audio_url = response.output.audio.url
-            print(f"🌐 下载音频...")
-            
-            # 下载音频
-            audio_response = requests.get(audio_url, timeout=60)
-            audio_response.raise_for_status()
-            
-            # 保存文件
-            with open(output_path, 'wb') as f:
-                f.write(audio_response.content)
-            
-            # 获取时长
-            duration = self._get_duration(output_path)
-            print(f"✅ 保存成功: {output_path.name} ({duration:.1f}秒)")
-            
-            return True
-            
+                
         except Exception as e:
             print(f"❌ 生成失败: {e}")
             return False
-    
-    def _get_duration(self, audio_path: Path) -> float:
-        """获取音频时长"""
-        try:
-            with wave.open(str(audio_path), 'rb') as wf:
-                frames = wf.getnframes()
-                rate = wf.getframerate()
-                return frames / float(rate)
-        except:
-            return 0.0
     
     def generate_from_json(self, json_file: Path) -> list[Path]:
         """
@@ -112,7 +153,7 @@ class NewsAudioGenerator:
         print(f"\n{'='*60}")
         print(f"🎙️  [1/{len(scripts)+2}] 开场白")
         intro_text = "欢迎收听新闻播报。以下是今日的新闻内容。"
-        intro_path = output_dir / f"{base_name}_00_intro.wav"
+        intro_path = output_dir / f"{base_name}_00_intro.mp3"
         
         if self.generate_audio(intro_text, intro_path):
             audio_files.append(intro_path)
@@ -128,7 +169,7 @@ class NewsAudioGenerator:
             print(f"\n{'='*60}")
             print(f"🎙️  [{i+1}/{len(scripts)+2}] {category_name}")
             
-            output_path = output_dir / f"{base_name}_{i:02d}_{category_id}.wav"
+            output_path = output_dir / f"{base_name}_{i:02d}_{category_id}.mp3"
             
             if self.generate_audio(script_text, output_path):
                 audio_files.append(output_path)
@@ -139,54 +180,82 @@ class NewsAudioGenerator:
         print(f"\n{'='*60}")
         print(f"🎙️  [{len(scripts)+2}/{len(scripts)+2}] 结束语")
         outro_text = "以上就是本次新闻播报的全部内容，感谢收听。"
-        outro_path = output_dir / f"{base_name}_{len(scripts)+1:02d}_outro.wav"
+        outro_path = output_dir / f"{base_name}_{len(scripts)+1:02d}_outro.mp3"
         
         if self.generate_audio(outro_text, outro_path):
             audio_files.append(outro_path)
         
-        # 4. 合并为完整音频
+        # 4. 合并为完整音频（MP3格式）
         if len(audio_files) > 0:
             print(f"\n{'='*60}")
-            print(f"🔗 合并音频文件...")
-            full_wav_path = output_dir / f"{base_name}_full.wav"
+            print(f"🔗 合并MP3音频文件...")
+            full_mp3_path = output_dir / f"{base_name}_full.mp3"
             
-            if self._merge_audio(audio_files, full_wav_path):
-                audio_files.append(full_wav_path)
-                print(f"✅ 完整音频: {full_wav_path.name}")
-                
-                # 5. 转换为高质量MP3
-                print(f"\n{'='*60}")
-                print(f"🎵 转换为MP3格式...")
-                full_mp3_path = output_dir / f"{base_name}_full.mp3"
-                
-                if self._convert_to_mp3(full_wav_path, full_mp3_path):
-                    audio_files.append(full_mp3_path)
-                    print(f"✅ MP3音频: {full_mp3_path.name}")
+            if self._merge_mp3_files(audio_files, full_mp3_path):
+                audio_files.append(full_mp3_path)
+                print(f"✅ 完整音频: {full_mp3_path.name}")
         
         return audio_files
     
-    def _merge_audio(self, audio_files: list[Path], output_path: Path) -> bool:
-        """合并多个WAV文件"""
+    def _merge_mp3_files(self, audio_files: list[Path], output_path: Path) -> bool:
+        """
+        使用ffmpeg合并多个MP3文件
+        
+        Args:
+            audio_files: MP3文件列表
+            output_path: 输出文件路径
+            
+        Returns:
+            是否成功
+        """
         try:
-            # 读取第一个文件的参数
-            with wave.open(str(audio_files[0]), 'rb') as first:
-                params = first.getparams()
+            import subprocess
+            import tempfile
             
-            # 写入合并后的文件
-            with wave.open(str(output_path), 'wb') as output:
-                output.setparams(params)
-                
+            # 创建临时文件列表
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False, encoding='utf-8') as f:
                 for audio_file in audio_files:
-                    with wave.open(str(audio_file), 'rb') as input_audio:
-                        output.writeframes(input_audio.readframes(input_audio.getnframes()))
+                    # ffmpeg concat需要相对路径或转义
+                    f.write(f"file '{audio_file.absolute()}'\n")
+                list_file = f.name
+            
+            try:
+                # 使用ffmpeg concat协议合并MP3
+                cmd = [
+                    'ffmpeg',
+                    '-f', 'concat',
+                    '-safe', '0',
+                    '-i', list_file,
+                    '-c', 'copy',  # 直接复制，不重新编码
+                    '-y',
+                    str(output_path)
+                ]
+                
+                result = subprocess.run(
+                    cmd,
+                    capture_output=True,
+                    text=True,
+                    creationflags=subprocess.CREATE_NO_WINDOW if hasattr(subprocess, 'CREATE_NO_WINDOW') else 0
+                )
+                
+                if result.returncode == 0:
+                    file_size = output_path.stat().st_size / 1024 / 1024  # MB
+                    print(f"📊 合并完成: {file_size:.2f} MB")
+                    return True
+                else:
+                    print(f"❌ ffmpeg合并错误: {result.stderr}")
+                    return False
                     
-                    # 添加0.8秒静音间隔
-                    silence_frames = int(0.8 * params.framerate)
-                    silence = b'\x00' * (silence_frames * params.sampwidth * params.nchannels)
-                    output.writeframes(silence)
-            
-            return True
-            
+            finally:
+                # 清理临时文件
+                try:
+                    os.unlink(list_file)
+                except:
+                    pass
+                    
+        except FileNotFoundError:
+            print(f"❌ 未找到ffmpeg，请确保已安装并添加到PATH")
+            return False
         except Exception as e:
             print(f"❌ 合并失败: {e}")
             return False
@@ -284,10 +353,11 @@ def main():
         return
     
     # 正常模式：生成音频
-    # 检查API Key
-    if not os.getenv("DASHSCOPE_API_KEY"):
-        print("❌ 请设置DASHSCOPE_API_KEY环境变量")
-        print("   示例: $env:DASHSCOPE_API_KEY='your-api-key'")
+    # 检查环境变量
+    if not os.getenv("VOLCENGINE_APP_ID") or not os.getenv("VOLCENGINE_ACCESS_TOKEN"):
+        print("❌ 请设置VOLCENGINE_APP_ID和VOLCENGINE_ACCESS_TOKEN环境变量")
+        print("   示例: $env:VOLCENGINE_APP_ID='your-app-id'")
+        print("   示例: $env:VOLCENGINE_ACCESS_TOKEN='your-access-token'")
         sys.exit(1)
     
     # 获取JSON文件路径
