@@ -388,6 +388,7 @@
         function renderAgent(name, data) {
             const isOnline = data && (Date.now() - new Date(data.last_update).getTime()) < 60000;
             const lastMsg = data ? getLastMessage(data.conversation_history) : '暂无消息';
+            const timeInfo = data && data.injected_time_info ? data.injected_time_info : '未注入时间';
             
             return `
                 <div class="agent-card ${name}" onclick="showDetail('${name}')">
@@ -409,6 +410,10 @@
                         <div class="info-item">
                             <span>⏰</span>
                             <span>最后活动: <strong>${formatTime(data ? data.last_message_time : null)}</strong></span>
+                        </div>
+                        <div class="info-item" style="color: #007acc; font-weight: 500;">
+                            <span>🕒</span>
+                            <span>注入时间: <strong>${data && data.injected_time_info ? data.injected_time_info : '未注入时间'}</strong></span>
                         </div>
                     </div>
                     <div class="history-preview">
@@ -432,6 +437,7 @@
             document.getElementById('modalTitle').textContent = `${agentName} - 完整对话历史`;
             
             const history = data.conversation_history || [];
+            const timeInfo = data.injected_time_info ? data.injected_time_info : '未注入时间';
             const historyHtml = history.map((msg, index) => `
                 <div class="message ${msg.role}">
                     <div class="message-header">
@@ -443,6 +449,11 @@
             `).join('');
 
             document.getElementById('modalBody').innerHTML = `
+                <div style="padding: 15px; background: #e3f2fd; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #007acc;">
+                    <div style="font-weight: bold; color: #007acc; margin-bottom: 5px;">🕒 当前注入的时间信息</div>
+                    <div style="color: #555;">${timeInfo}</div>
+                    <div style="font-size: 0.85em; color: #888; margin-top: 5px;">此时间会在每次 API 调用时动态注入到系统提示中</div>
+                </div>
                 <div class="history-container">
                     ${historyHtml || '<div class="no-data">暂无历史记录</div>'}
                 </div>

@@ -80,10 +80,15 @@ class AIAgent:
             return
         
         try:
+            # 生成当前注入的时间信息（与generate_response中保持一致）
+            current_time = datetime.now()
+            time_info = f"[当前时间：{current_time.year}年{current_time.month}月{current_time.day}日 {current_time.hour}点{current_time.minute}分]"
+            
             status_data = {
                 'nickname': self.nickname,
                 'last_update': datetime.now().isoformat(),
                 'conversation_history': self.conversation_history.copy(),
+                'injected_time_info': time_info,  # 添加注入的时间信息
                 'max_bot_turns': self.max_bot_turns,
                 'last_message_time': self.last_message_time.isoformat() if self.last_message_time else None,
                 'history_length': len(self.conversation_history)
