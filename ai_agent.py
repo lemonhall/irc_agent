@@ -7,23 +7,38 @@ import tempfile
 from datetime import datetime
 from openai import OpenAI
 from config import OpenAIConfig, AgentConfig
+from weather_service import get_city_weather
 
 logger = logging.getLogger(__name__)
 
 
-def format_current_time() -> str:
+def format_current_time(location: str = None) -> str:
     """
-    格式化当前时间，包括星期几
+    格式化当前时间，包括星期几和天气
+    
+    Args:
+        location: 城市名称（用于获取天气），如 "北京"、"上海"、"深圳"
     
     Returns:
-        格式化的时间字符串，如：2025年10月13日 星期二 22点45分
+        格式化的时间字符串，如：2025年10月13日 星期二 22点45分，北京☀️晴朗，气温12°C
     """
     current_time = datetime.now()
     weekdays = ["星期一", "星期二", "星期三", "星期四", "星期五", "星期六", "星期日"]
     weekday = weekdays[current_time.weekday()]
     
-    return (f"{current_time.year}年{current_time.month}月{current_time.day}日 "
-            f"{weekday} {current_time.hour}点{current_time.minute}分")
+    time_str = (f"{current_time.year}年{current_time.month}月{current_time.day}日 "
+                f"{weekday} {current_time.hour}点{current_time.minute}分")
+    
+    # 如果提供了城市，添加天气信息
+    if location:
+        try:
+            weather = get_city_weather(location)
+            time_str += f"，{location}{weather}"
+        except Exception as e:
+            logger.warning(f"获取天气信息失败: {e}")
+            # 获取天气失败不影响时间显示
+    
+    return time_str
 
 
 def remove_parenthetical_content(text: str) -> str:
@@ -95,8 +110,8 @@ class AIAgent:
             return
         
         try:
-            # 生成当前注入的时间信息（与generate_response中保持一致）
-            time_info = f"[当前时间：{format_current_time()}]"
+            # 生成当前注入的时间和天气信息（与generate_response中保持一致）
+            time_info = f"[当前时间：{format_current_time(self.agent_config.location)}]"
             
             status_data = {
                 'nickname': self.nickname,
@@ -169,8 +184,8 @@ class AIAgent:
         
         # 3. 使用 AI 判断是否需要参与对话
         try:
-            # 获取当前时间（包含星期）
-            time_str = format_current_time()
+            # 获取当前时间和天气（包含星期）
+            time_str = format_current_time(self.agent_config.location)
             
             # 构建判断提示
             judge_prompt = f"""你是 IRC 聊天室的参与者。判断是否回应这条消息：
@@ -275,8 +290,8 @@ class AIAgent:
         context_note = f"\n\n[系统提示：这是最近第 {consecutive_bot_turns + 1} 轮 bot 连续对话。如果已经3轮以上，应该暂停让人类参与]"
         self.conversation_history[-1]["content"] += context_note
         
-        # 更新系统提示，添加当前时间信息（包含星期）
-        time_info = f"\n\n[当前时间：{format_current_time()}]"
+        # 更新系统提示，添加当前时间和天气信息（包含星期）
+        time_info = f"\n\n[当前时间：{format_current_time(self.agent_config.location)}]"
         
         # 创建包含时间信息的消息列表（不修改原始历史记录中的系统提示）
         messages_with_time = self.conversation_history.copy()

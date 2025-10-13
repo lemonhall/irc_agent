@@ -33,6 +33,8 @@ class OpenAIConfig:
 @dataclass
 class AgentConfig:
     """Agent 行为配置"""
+    # Agent 所在城市（用于天气查询）
+    location: str = "北京"
     # 触发关键词，当消息包含这些词或提到 bot 名字时回复
     trigger_on_mention: bool = True
     trigger_keywords: list[str] = None
