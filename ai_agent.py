@@ -1,6 +1,9 @@
 """OpenAI Agent 实现"""
+import json
 import logging
+import os
 import re
+import tempfile
 from datetime import datetime
 from openai import OpenAI
 from config import OpenAIConfig, AgentConfig
@@ -35,9 +38,13 @@ class AIAgent:
     # 已知的 bot 昵称列表
     KNOWN_BOTS = ["mingxuan", "yueran", "zhiyuan"]
     
-    def __init__(self, openai_config: OpenAIConfig, agent_config: AgentConfig):
+    # 全局字典，存储所有agent实例（用于web监控）
+    _instances = {}
+    
+    def __init__(self, openai_config: OpenAIConfig, agent_config: AgentConfig, nickname: str = None):
         self.openai_config = openai_config
         self.agent_config = agent_config
+        self.nickname = nickname  # agent昵称，用于标识
         self.client = OpenAI(
             api_key=openai_config.api_key,
             base_url=openai_config.base_url
@@ -56,6 +63,37 @@ class AIAgent:
             _ = self.client.models
         except Exception:
             pass  # 忽略初始化错误
+        
+        # 注册到全局实例字典（用于web监控）
+        if nickname:
+            AIAgent._instances[nickname] = self
+            # 同时创建状态文件用于进程间通信
+            self._status_file_path = os.path.join(
+                tempfile.gettempdir(), 
+                f"irc_agent_{nickname}.json"
+            )
+            self._update_status_file()
+    
+    def _update_status_file(self):
+        """更新状态文件（每个agent独立的JSON文件）"""
+        if not self.nickname:
+            return
+        
+        try:
+            status_data = {
+                'nickname': self.nickname,
+                'last_update': datetime.now().isoformat(),
+                'conversation_history': self.conversation_history.copy(),
+                'max_bot_turns': self.max_bot_turns,
+                'last_message_time': self.last_message_time.isoformat() if self.last_message_time else None,
+                'history_length': len(self.conversation_history)
+            }
+            
+            with open(self._status_file_path, 'w', encoding='utf-8') as f:
+                json.dump(status_data, f, ensure_ascii=False, indent=2)
+                
+        except Exception as e:
+            logger.warning(f"更新状态文件失败: {e}")
     
     def should_respond(self, message: str, sender: str, bot_nickname: str) -> bool:
         """判断是否应该响应这条消息 - 使用 AI 智能判断"""
@@ -269,6 +307,9 @@ class AIAgent:
                 "role": "assistant",
                 "content": cleaned_message
             })
+            
+            # 更新状态文件
+            self._update_status_file()
             
             logger.info(f"生成回复: {cleaned_message}")
             return cleaned_message

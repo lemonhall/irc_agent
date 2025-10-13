@@ -34,7 +34,7 @@ def main():
     logger.info(f"AI 模型: {openai_config.model}")
     
     # 创建 AI Agent
-    agent = AIAgent(openai_config, agent_config)
+    agent = AIAgent(openai_config, agent_config, irc_config.nickname)
     
     # 创建 IRC 客户端
     irc_client = IRCClient(
