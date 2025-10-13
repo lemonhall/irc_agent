@@ -1,7 +1,7 @@
 """OpenAI Agent 实现"""
 import logging
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from openai import OpenAI
 from config import OpenAIConfig, AgentConfig
 
@@ -47,6 +47,13 @@ class AIAgent:
             {"role": "system", "content": agent_config.system_prompt}
         ]
         self.max_history = 20  # 保留最近的对话
+        
+        # 时间管理相关
+        self.message_timestamps: dict[int, datetime] = {}  # 消息索引 -> 时间戳
+        self.last_message_time: datetime | None = None  # 最后一条消息的时间
+        self.context_window_minutes = 30  # 上下文有效期（分钟）
+        self.reset_threshold_minutes = 60  # 自动重置阈值（分钟）
+        
         # 随机最大 bot 连续轮数（1~3）
         self.max_bot_turns = self.random.randint(1, 3)
         # 提前触发 client 初始化，避免在多线程环境中首次调用时出错
@@ -54,6 +61,48 @@ class AIAgent:
             _ = self.client.models
         except Exception:
             pass  # 忽略初始化错误
+    
+    def _check_and_reset_if_needed(self):
+        """检查是否需要重置历史（长时间无消息）"""
+        if self.last_message_time is None:
+            return
+        
+        now = datetime.now()
+        gap_minutes = (now - self.last_message_time).total_seconds() / 60
+        
+        if gap_minutes > self.reset_threshold_minutes:
+            logger.info(f"[时间重置] {gap_minutes:.1f}分钟无消息，清空历史记录")
+            self.conversation_history = [
+                {"role": "system", "content": self.agent_config.system_prompt}
+            ]
+            self.message_timestamps.clear()
+            self.last_message_time = now
+    
+    def _mark_old_messages(self):
+        """标记过期的历史消息"""
+        if not self.message_timestamps:
+            return self.conversation_history
+        
+        now = datetime.now()
+        cutoff_time = now - timedelta(minutes=self.context_window_minutes)
+        marked_history = []
+        
+        for idx, msg in enumerate(self.conversation_history):
+            if idx == 0:  # 系统提示不标记
+                marked_history.append(msg)
+                continue
+            
+            msg_time = self.message_timestamps.get(idx)
+            if msg_time and msg_time < cutoff_time:
+                # 标记为历史对话
+                content = msg["content"]
+                if not content.startswith("[历史对话]"):
+                    content = f"[历史对话] {content}"
+                marked_history.append({"role": msg["role"], "content": content})
+            else:
+                marked_history.append(msg)
+        
+        return marked_history
     
     def should_respond(self, message: str, sender: str, bot_nickname: str) -> bool:
         """判断是否应该响应这条消息 - 使用 AI 智能判断"""
@@ -168,19 +217,37 @@ class AIAgent:
     
     def generate_response(self, channel: str, sender: str, message: str) -> str:
         """生成对消息的回复"""
+        now = datetime.now()
+        
+        # 检查是否需要重置历史
+        self._check_and_reset_if_needed()
+        
         # 添加用户消息到历史
         user_message = f"[来自 {sender} 在 {channel}]: {message}"
+        msg_index = len(self.conversation_history)
         self.conversation_history.append({
             "role": "user",
             "content": user_message
         })
+        self.message_timestamps[msg_index] = now
+        self.last_message_time = now
         
         # 保持历史长度
         if len(self.conversation_history) > self.max_history:
             # 保留系统提示和最近的消息
+            old_length = len(self.conversation_history)
             self.conversation_history = [
                 self.conversation_history[0]
             ] + self.conversation_history[-(self.max_history-1):]
+            
+            # 更新时间戳索引（移除旧消息的时间戳）
+            removed_count = old_length - len(self.conversation_history)
+            new_timestamps = {}
+            for old_idx, timestamp in self.message_timestamps.items():
+                if old_idx >= removed_count:
+                    new_idx = old_idx - removed_count + 1  # +1 因为保留了系统提示
+                    new_timestamps[new_idx] = timestamp
+            self.message_timestamps = new_timestamps
         
         # 统计最近的连续 bot 对话轮数（从历史记录倒数）
         consecutive_bot_turns = 0
@@ -207,8 +274,9 @@ class AIAgent:
         current_time = datetime.now()
         time_info = f"\n\n[当前时间：{current_time.year}年{current_time.month}月{current_time.day}日 {current_time.hour}点{current_time.minute}分]"
         
-        # 创建包含时间信息的消息列表（不修改原始历史记录中的系统提示）
-        messages_with_time = self.conversation_history.copy()
+        # 创建包含时间信息和历史标记的消息列表
+        marked_history = self._mark_old_messages()
+        messages_with_time = marked_history.copy()
         messages_with_time[0] = {
             "role": "system",
             "content": self.agent_config.system_prompt + time_info
@@ -218,7 +286,7 @@ class AIAgent:
             # 调用 OpenAI API
             response = self.client.chat.completions.create(
                 model=self.openai_config.model,
-                messages=messages_with_time,  # 使用包含时间信息的消息列表
+                messages=messages_with_time,  # 使用包含时间信息和历史标记的消息列表
                 max_tokens=self.openai_config.max_tokens,
                 temperature=self.openai_config.temperature
             )
@@ -249,10 +317,12 @@ class AIAgent:
                 logger.info(f"已清理括号内容: {assistant_message[:100]}... -> {cleaned_message[:100]}...")
             
             # 添加助手回复到历史（使用清理后的消息）
+            assistant_index = len(self.conversation_history)
             self.conversation_history.append({
                 "role": "assistant",
                 "content": cleaned_message
             })
+            self.message_timestamps[assistant_index] = now
             
             logger.info(f"生成回复: {cleaned_message}")
             return cleaned_message
@@ -266,4 +336,6 @@ class AIAgent:
         self.conversation_history = [
             {"role": "system", "content": self.agent_config.system_prompt}
         ]
+        self.message_timestamps.clear()
+        self.last_message_time = None
         logger.info("对话历史已重置")
