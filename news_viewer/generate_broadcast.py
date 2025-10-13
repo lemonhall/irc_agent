@@ -140,9 +140,13 @@ class NewsAnchor:
                     "news_count": len(news_items)
                 })
         
-        # 保存为 JSON
+        # 创建以时间戳命名的子目录
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        json_file = OUTPUT_DIR / f"broadcast_{timestamp}.json"
+        broadcast_dir = OUTPUT_DIR / timestamp
+        broadcast_dir.mkdir(parents=True, exist_ok=True)
+        
+        # 保存为 JSON
+        json_file = broadcast_dir / "broadcast.json"
         
         try:
             with open(json_file, 'w', encoding='utf-8') as f:
@@ -152,7 +156,7 @@ class NewsAnchor:
             logger.error(f"保存播报稿失败: {e}")
         
         # 同时保存一份纯文本版本（方便查看和 TTS）
-        txt_file = OUTPUT_DIR / f"broadcast_{timestamp}.txt"
+        txt_file = broadcast_dir / "broadcast.txt"
         
         try:
             with open(txt_file, 'w', encoding='utf-8') as f:

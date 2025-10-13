@@ -12,6 +12,7 @@ import wave
 import base64
 import uuid
 from pathlib import Path
+from datetime import datetime
 from dotenv import load_dotenv
 
 # 加载环境变量
@@ -143,9 +144,9 @@ class NewsAudioGenerator:
         scripts = data.get('scripts', [])
         print(f"\n🎵 共 {len(scripts)} 个新闻段落")
         
-        # 输出目录
+        # 输出目录（与JSON文件同目录）
         output_dir = json_file.parent
-        base_name = json_file.stem
+        base_name = "broadcast"  # 统一使用 broadcast 作为文件名前缀
         
         audio_files = []
         
@@ -361,21 +362,62 @@ def main():
         sys.exit(1)
     
     # 获取JSON文件路径
+    broadcast_dir = Path(__file__).parent / "broadcasts"
+    
     if len(sys.argv) > 1:
-        json_file = Path(sys.argv[1])
+        arg = sys.argv[1]
+        arg_path = Path(arg)
+        
+        # 判断参数类型
+        if arg_path.is_absolute() and arg_path.exists():
+            # 绝对路径
+            json_file = arg_path
+        elif (broadcast_dir / arg).exists():
+            # 相对于 broadcasts 的子目录名称
+            subdir = broadcast_dir / arg
+            # 在子目录中查找 JSON 文件
+            json_files = list(subdir.glob("*.json"))
+            if not json_files:
+                print(f"❌ 在目录 {subdir} 中未找到 JSON 文件")
+                sys.exit(1)
+            json_file = json_files[0]  # 取第一个
+            print(f"📂 使用目录: {arg}")
+        elif arg_path.exists():
+            # 相对路径
+            json_file = arg_path
+        else:
+            print(f"❌ 找不到文件或目录: {arg}")
+            sys.exit(1)
     else:
-        # 使用最新的JSON文件
-        broadcast_dir = Path(__file__).parent / "broadcasts"
-        json_files = sorted(broadcast_dir.glob("*.json"), 
-                          key=lambda p: p.stat().st_mtime, 
-                          reverse=True)
+        # 无参数：优先查找当天日期的目录
+        today_prefix = datetime.now().strftime("%Y%m%d")
+        
+        # 获取所有子目录
+        subdirs = [d for d in broadcast_dir.iterdir() if d.is_dir()]
+        
+        # 优先查找今天的目录
+        today_dirs = [d for d in subdirs if d.name.startswith(today_prefix)]
+        
+        if today_dirs:
+            # 有今天的目录，取最新的（按时间戳排序）
+            latest_dir = sorted(today_dirs, key=lambda p: p.name, reverse=True)[0]
+            print(f"📅 找到今天的播报目录: {latest_dir.name}")
+        else:
+            # 没有今天的目录，使用最新修改的目录
+            if not subdirs:
+                print("❌ broadcasts 目录下没有任何子目录")
+                sys.exit(1)
+            
+            latest_dir = sorted(subdirs, key=lambda p: p.stat().st_mtime, reverse=True)[0]
+            print(f"⚠️  今天没有播报，使用最新的目录: {latest_dir.name}")
+        
+        json_files = list(latest_dir.glob("*.json"))
         
         if not json_files:
-            print("❌ 未找到任何JSON文件")
+            print(f"❌ 在目录 {latest_dir.name} 中未找到 JSON 文件")
             sys.exit(1)
         
         json_file = json_files[0]
-        print(f"📄 使用最新的播报文件: {json_file.name}")
     
     if not json_file.exists():
         print(f"❌ 文件不存在: {json_file}")
