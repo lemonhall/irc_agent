@@ -11,6 +11,21 @@ from config import OpenAIConfig, AgentConfig
 logger = logging.getLogger(__name__)
 
 
+def format_current_time() -> str:
+    """
+    格式化当前时间，包括星期几
+    
+    Returns:
+        格式化的时间字符串，如：2025年10月13日 星期二 22点45分
+    """
+    current_time = datetime.now()
+    weekdays = ["星期一", "星期二", "星期三", "星期四", "星期五", "星期六", "星期日"]
+    weekday = weekdays[current_time.weekday()]
+    
+    return (f"{current_time.year}年{current_time.month}月{current_time.day}日 "
+            f"{weekday} {current_time.hour}点{current_time.minute}分")
+
+
 def remove_parenthetical_content(text: str) -> str:
     """
     移除文本中所有括号及其内容（包括中英文括号）
@@ -81,8 +96,7 @@ class AIAgent:
         
         try:
             # 生成当前注入的时间信息（与generate_response中保持一致）
-            current_time = datetime.now()
-            time_info = f"[当前时间：{current_time.year}年{current_time.month}月{current_time.day}日 {current_time.hour}点{current_time.minute}分]"
+            time_info = f"[当前时间：{format_current_time()}]"
             
             status_data = {
                 'nickname': self.nickname,
@@ -155,9 +169,8 @@ class AIAgent:
         
         # 3. 使用 AI 判断是否需要参与对话
         try:
-            # 获取当前时间
-            current_time = datetime.now()
-            time_str = f"{current_time.year}年{current_time.month}月{current_time.day}日 {current_time.hour}点{current_time.minute}分"
+            # 获取当前时间（包含星期）
+            time_str = format_current_time()
             
             # 构建判断提示
             judge_prompt = f"""你是 IRC 聊天室的参与者。判断是否回应这条消息：
@@ -262,9 +275,8 @@ class AIAgent:
         context_note = f"\n\n[系统提示：这是最近第 {consecutive_bot_turns + 1} 轮 bot 连续对话。如果已经3轮以上，应该暂停让人类参与]"
         self.conversation_history[-1]["content"] += context_note
         
-        # 更新系统提示，添加当前时间信息
-        current_time = datetime.now()
-        time_info = f"\n\n[当前时间：{current_time.year}年{current_time.month}月{current_time.day}日 {current_time.hour}点{current_time.minute}分]"
+        # 更新系统提示，添加当前时间信息（包含星期）
+        time_info = f"\n\n[当前时间：{format_current_time()}]"
         
         # 创建包含时间信息的消息列表（不修改原始历史记录中的系统提示）
         messages_with_time = self.conversation_history.copy()
