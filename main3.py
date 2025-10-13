@@ -1,10 +1,9 @@
-"""主程序入口 - 优化 Ctrl+C 处理版本"""
+"""第三个 AI Agent 主程序 (使用 Ling-1T 模型)"""
 import logging
 import threading
 import time
-import sys
 import os
-from config import IRCConfig, OpenAIConfig, AgentConfig
+from config3 import IRCConfig, OpenAIConfig, AgentConfig
 from irc_client import IRCClient
 from ai_agent import AIAgent
 
@@ -28,10 +27,10 @@ def main():
     
     # 检查 API Key
     if not openai_config.api_key:
-        logger.error("请设置 OPENAI_API_KEY 环境变量")
+        logger.error("请设置 LING_API_KEY 环境变量")
         return
     
-    logger.info("=== IRC AI Agent 启动 ===")
+    logger.info("=== IRC AI Agent 3 (Ling-1T) 启动 ===")
     logger.info(f"IRC 服务器: {irc_config.server}:{irc_config.port}")
     logger.info(f"频道: {irc_config.channel}")
     logger.info(f"昵称: {irc_config.nickname}")
@@ -83,7 +82,7 @@ def main():
     irc_thread.start()
     
     # 主线程保持运行，这样可以响应 Ctrl+C
-    logger.info("Bot 运行中，按 Ctrl+C 退出...")
+    logger.info("Bot 3 (智渊) 运行中，按 Ctrl+C 退出...")
     logger.info("提示: Windows 用户可能需要按 Ctrl+C 两次或直接关闭窗口")
     
     try:
@@ -102,12 +101,9 @@ def main():
         except Exception as e:
             logger.error(f"断开连接时出错: {e}")
         
-        # 等待线程结束（最多等待1秒）
-        irc_thread.join(timeout=1.0)
-        
-        logger.info("✓ 程序已退出")
-        # 强制退出，确保所有线程都停止
-        os._exit(0)
+        # 给一点时间让清理完成
+        time.sleep(0.5)
+        logger.info("=== Bot 3 已退出 ===")
 
 
 if __name__ == "__main__":

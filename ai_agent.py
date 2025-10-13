@@ -99,7 +99,17 @@ class AIAgent:
                 temperature=0.3  # 降低温度，使判断更确定
             )
             
-            answer = response.choices[0].message.content.strip()
+            # 健壮的响应解析
+            if not response or not response.choices or not response.choices[0].message:
+                logger.warning(f"AI 判断返回空响应，降级到关键词触发")
+                raise ValueError("Empty response from AI judge")
+            
+            answer = response.choices[0].message.content
+            if not answer:
+                logger.warning(f"AI 判断返回空内容，降级到关键词触发")
+                raise ValueError("Empty content from AI judge")
+                
+            answer = answer.strip()
             should_reply = "是" in answer or "yes" in answer.lower()
             
             if should_reply:
@@ -153,7 +163,20 @@ class AIAgent:
                 temperature=self.openai_config.temperature
             )
             
-            assistant_message = response.choices[0].message.content
+            # 健壮的响应解析
+            if not response or not response.choices:
+                logger.error(f"API 返回了空响应: {response}")
+                return "抱歉，我没有收到有效的响应。"
+            
+            choice = response.choices[0]
+            if not choice or not choice.message:
+                logger.error(f"API 返回的 choice 无效: {choice}")
+                return "抱歉，响应格式异常。"
+            
+            assistant_message = choice.message.content
+            if not assistant_message:
+                logger.error(f"API 返回的 content 为空")
+                return "抱歉，我暂时无话可说。"
             
             # 添加助手回复到历史
             self.conversation_history.append({
