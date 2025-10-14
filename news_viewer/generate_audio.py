@@ -11,6 +11,7 @@ import requests
 import wave
 import base64
 import uuid
+import subprocess
 from pathlib import Path
 from datetime import datetime
 from dotenv import load_dotenv
@@ -39,7 +40,7 @@ class NewsAudioGenerator:
         print(f"🎤 新闻音频生成器初始化完成 (声音: {self.voice})")
         print(f"🔑 使用火山引擎 TTS API")
     
-    def generate_audio(self, text: str, output_path: Path) -> bool:
+    def generate_audio(self, text: str, output_path: Path) -> tuple[bool, float]:
         """
         为文本生成音频（使用火山引擎TTS）
         
@@ -48,7 +49,7 @@ class NewsAudioGenerator:
             output_path: 输出路径
             
         Returns:
-            是否成功
+            (是否成功, 音频时长秒数)
         """
         try:
             print(f"📝 文本长度: {len(text)} 字符")
@@ -113,19 +114,54 @@ class NewsAudioGenerator:
                     if log_id:
                         print(f"   日志ID: {log_id}")
                     
-                    return True
+                    return True, duration_sec
                 else:
                     print(f"❌ API响应但无音频数据")
-                    return False
+                    return False, 0.0
             else:
                 print(f"❌ API错误: Code={result.get('code')}, Message={result.get('message')}")
                 if log_id:
                     print(f"   日志ID: {log_id}")
-                return False
+                return False, 0.0
                 
         except Exception as e:
             print(f"❌ 生成失败: {e}")
-            return False
+            return False, 0.0
+    
+    def _get_mp3_duration(self, mp3_path: Path) -> float:
+        """
+        获取MP3文件的时长（使用ffprobe）
+        
+        Args:
+            mp3_path: MP3文件路径
+            
+        Returns:
+            时长（秒）
+        """
+        try:
+            cmd = [
+                'ffprobe',
+                '-v', 'error',
+                '-show_entries', 'format=duration',
+                '-of', 'default=noprint_wrappers=1:nokey=1',
+                str(mp3_path)
+            ]
+            
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                creationflags=subprocess.CREATE_NO_WINDOW if hasattr(subprocess, 'CREATE_NO_WINDOW') else 0
+            )
+            
+            if result.returncode == 0:
+                duration = float(result.stdout.strip())
+                return duration
+            else:
+                return 0.0
+                
+        except Exception:
+            return 0.0
     
     def generate_from_json(self, json_file: Path) -> list[Path]:
         """
@@ -149,6 +185,8 @@ class NewsAudioGenerator:
         base_name = "broadcast"  # 统一使用 broadcast 作为文件名前缀
         
         audio_files = []
+        timeline = []  # 存储时间轴信息
+        cumulative_time = 0.0  # 累积时间
         
         # 1. 生成开场白
         print(f"\n{'='*60}")
@@ -156,8 +194,26 @@ class NewsAudioGenerator:
         intro_text = "欢迎收听新闻播报。以下是今日的新闻内容。"
         intro_path = output_dir / f"{base_name}_00_intro.mp3"
         
-        if self.generate_audio(intro_text, intro_path):
+        success, duration = self.generate_audio(intro_text, intro_path)
+        if success:
             audio_files.append(intro_path)
+            # 如果API没有返回时长，使用ffprobe获取
+            if duration == 0.0:
+                duration = self._get_mp3_duration(intro_path)
+            
+            # 记录时间轴
+            start_time = cumulative_time
+            end_time = cumulative_time + duration
+            timeline.append({
+                "category_id": "intro",
+                "category_name": "🎙️ 开场白",
+                "script": intro_text,
+                "audio_file": intro_path.name,
+                "duration": round(duration, 2),
+                "start_time": round(start_time, 2),
+                "end_time": round(end_time, 2)
+            })
+            cumulative_time = end_time
         
         time.sleep(1)  # API限流
         
@@ -172,8 +228,21 @@ class NewsAudioGenerator:
             
             output_path = output_dir / f"{base_name}_{i:02d}_{category_id}.mp3"
             
-            if self.generate_audio(script_text, output_path):
+            success, duration = self.generate_audio(script_text, output_path)
+            if success:
                 audio_files.append(output_path)
+                # 如果API没有返回时长，使用ffprobe获取
+                if duration == 0.0:
+                    duration = self._get_mp3_duration(output_path)
+                
+                # 更新原有的 script_item
+                start_time = cumulative_time
+                end_time = cumulative_time + duration
+                script_item['audio_file'] = output_path.name
+                script_item['duration'] = round(duration, 2)
+                script_item['start_time'] = round(start_time, 2)
+                script_item['end_time'] = round(end_time, 2)
+                cumulative_time = end_time
             
             time.sleep(1)  # API限流
         
@@ -183,10 +252,43 @@ class NewsAudioGenerator:
         outro_text = "以上就是本次新闻播报的全部内容，感谢收听。"
         outro_path = output_dir / f"{base_name}_{len(scripts)+1:02d}_outro.mp3"
         
-        if self.generate_audio(outro_text, outro_path):
+        success, duration = self.generate_audio(outro_text, outro_path)
+        if success:
             audio_files.append(outro_path)
+            # 如果API没有返回时长，使用ffprobe获取
+            if duration == 0.0:
+                duration = self._get_mp3_duration(outro_path)
+            
+            # 记录时间轴
+            start_time = cumulative_time
+            end_time = cumulative_time + duration
+            timeline.append({
+                "category_id": "outro",
+                "category_name": "🎙️ 结束语",
+                "script": outro_text,
+                "audio_file": outro_path.name,
+                "duration": round(duration, 2),
+                "start_time": round(start_time, 2),
+                "end_time": round(end_time, 2)
+            })
+            cumulative_time = end_time
         
-        # 4. 合并为完整音频（MP3格式）
+        # 4. 更新 JSON 文件，添加 intro 和 outro，并回写时长信息
+        # 创建新的 scripts 列表，包含 intro + 原有内容 + outro
+        updated_scripts = [timeline[0]] + scripts + [timeline[-1]]
+        data['scripts'] = updated_scripts
+        data['total_duration'] = round(cumulative_time, 2)
+        data['audio_generated_time'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        
+        # 回写JSON文件
+        with open(json_file, 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+        
+        print(f"\n{'='*60}")
+        print(f"✅ 时间轴信息已回写到: {json_file.name}")
+        print(f"📊 总时长: {cumulative_time:.1f} 秒 ({cumulative_time/60:.1f} 分钟)")
+        
+        # 5. 合并为完整音频（MP3格式）
         if len(audio_files) > 0:
             print(f"\n{'='*60}")
             print(f"🔗 合并MP3音频文件...")
@@ -195,6 +297,11 @@ class NewsAudioGenerator:
             if self._merge_mp3_files(audio_files, full_mp3_path):
                 audio_files.append(full_mp3_path)
                 print(f"✅ 完整音频: {full_mp3_path.name}")
+                
+                # 验证合并后的时长
+                final_duration = self._get_mp3_duration(full_mp3_path)
+                if final_duration > 0:
+                    print(f"🎵 实际时长: {final_duration:.1f} 秒 ({final_duration/60:.1f} 分钟)")
         
         return audio_files
     

@@ -266,12 +266,14 @@ class NewsVideoGenerator:
             # 居中显示
             overlay_pos = "(W-w)/2:(H-h)/2"
         elif effect == "vectorscope":
-            # 矢量示波器（居中显示，方形）
+            # 矢量示波器（居中显示，方形，带残影效果）
             size = min(width, video_height) // 2
             vis_filter = (
                 f"[0:a]avectorscope=s={size}x{size}:"
-                f"zoom=1.5:draw=line:scale=log[vis]"
+                f"zoom=1.5:draw=line:scale=log,"
+                f"lagfun=decay=0.95[vis]"  # 添加残影效果，衰减率0.95
             )
+            # 居中显示
             overlay_pos = "(W-w)/2:(H-h)/2"
         else:
             vis_filter = f"[0:a]anullsink[vis]"
@@ -320,10 +322,12 @@ class NewsVideoGenerator:
             # 居中显示
             overlay_pos = "(W-w)/2:(H-h)/2"
         elif effect == "vectorscope":
+            # 矢量示波器（居中显示，方形，带残影效果）
             size = min(width, video_height) // 2
             vis_filter = (
                 f"[0:a]avectorscope=s={size}x{size}:"
-                f"zoom=1.5:draw=line:scale=log[vis]"
+                f"zoom=1.5:draw=line:scale=log,"
+                f"lagfun=decay=0.95[vis]"  # 添加残影效果
             )
             overlay_pos = "(W-w)/2:(H-h)/2"
         else:
@@ -453,19 +457,23 @@ def main():
     # 生成视频
     generator = NewsVideoGenerator()
     
-    # 生成频谱图效果：1/3宽度，白色，居中
-    print("🎨 FFT频谱柱状图（1/3宽度，白色居中）")
+    # 生成简洁的立体声相位图（带残影效果）
+    print("🎨 立体声相位图（白色，居中，带残影）")
     success = generator.batch_generate_from_broadcast(
         latest_dir,
-        effect="spectrum",        # 频谱柱状图
+        effect="vectorscope",     # 立体声相位图
         color_scheme="default",   # 白色
-        suffix="spectrum"         # 文件名后缀
+        suffix="scope"            # 文件名后缀
     )
     
     if success:
         print("\n" + "=" * 50)
         print("✅ 视频生成完成!")
         print(f"📂 输出目录: {latest_dir}")
+        print("\n💡 效果说明:")
+        print("   - 简洁的立体声相位线")
+        print("   - 带有淡淡的运动轨迹残影")
+        print("   - 随音频动态变化")
     else:
         print("\n❌ 视频生成失败")
 
