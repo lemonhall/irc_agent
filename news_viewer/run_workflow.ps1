@@ -5,9 +5,11 @@ param(
     [switch]$SkipFetch,
     [switch]$SkipBroadcast,
     [switch]$SkipAudio,
+    [switch]$SkipImages,
     [switch]$SkipBGM,
     [switch]$SkipVideo,
-    [double]$BGMVolume = 0.15
+    [double]$BGMVolume = 0.15,
+    [switch]$UseTimeline
 )
 
 $ErrorActionPreference = "Stop"
@@ -35,7 +37,7 @@ Set-Location $NEWS_VIEWER_DIR
 # Step 1: Fetch News
 if (-not $SkipFetch) {
     Write-Host "========================================" -ForegroundColor Yellow
-    Write-Host "STEP 1/4: Fetch News" -ForegroundColor Yellow
+    Write-Host "STEP 1/6: Fetch News" -ForegroundColor Yellow
     Write-Host "========================================" -ForegroundColor Yellow
     
     & $PYTHON "fetch_news.py"
@@ -55,7 +57,7 @@ if (-not $SkipFetch) {
 # Step 2: Generate Broadcast
 if (-not $SkipBroadcast) {
     Write-Host "========================================" -ForegroundColor Yellow
-    Write-Host "STEP 2/4: Generate Broadcast" -ForegroundColor Yellow
+    Write-Host "STEP 2/6: Generate Broadcast" -ForegroundColor Yellow
     Write-Host "========================================" -ForegroundColor Yellow
     
     & $PYTHON "generate_broadcast.py"
@@ -75,7 +77,7 @@ if (-not $SkipBroadcast) {
 # Step 3: Generate Audio
 if (-not $SkipAudio) {
     Write-Host "========================================" -ForegroundColor Yellow
-    Write-Host "STEP 3/4: Generate Audio" -ForegroundColor Yellow
+    Write-Host "STEP 3/6: Generate Audio" -ForegroundColor Yellow
     Write-Host "========================================" -ForegroundColor Yellow
     
     & $PYTHON "generate_audio.py"
@@ -92,10 +94,30 @@ if (-not $SkipAudio) {
     Write-Host ""
 }
 
-# Step 4: Add BGM
+# Step 4: Assign Images
+if (-not $SkipImages) {
+    Write-Host "========================================" -ForegroundColor Yellow
+    Write-Host "STEP 4/6: Assign Images" -ForegroundColor Yellow
+    Write-Host "========================================" -ForegroundColor Yellow
+    
+    & $PYTHON "assign_images.py"
+    
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "[ERROR] Image assignment failed" -ForegroundColor Red
+        exit 1
+    }
+    
+    Write-Host "[OK] Image assignment completed" -ForegroundColor Green
+    Write-Host ""
+} else {
+    Write-Host "[SKIP] Image assignment" -ForegroundColor Gray
+    Write-Host ""
+}
+
+# Step 5: Add BGM
 if (-not $SkipBGM) {
     Write-Host "========================================" -ForegroundColor Yellow
-    Write-Host "STEP 4/5: Add BGM" -ForegroundColor Yellow
+    Write-Host "STEP 5/6: Add BGM" -ForegroundColor Yellow
     Write-Host "========================================" -ForegroundColor Yellow
     
     $bgmDir = Join-Path $NEWS_VIEWER_DIR "bgm"
@@ -120,13 +142,19 @@ if (-not $SkipBGM) {
     Write-Host ""
 }
 
-# Step 5: Generate Video
+# Step 6: Generate Video
 if (-not $SkipVideo) {
     Write-Host "========================================" -ForegroundColor Yellow
-    Write-Host "STEP 5/5: Generate Video" -ForegroundColor Yellow
+    Write-Host "STEP 6/6: Generate Video" -ForegroundColor Yellow
     Write-Host "========================================" -ForegroundColor Yellow
     
-    & $PYTHON "generate_video.py"
+    if ($UseTimeline) {
+        Write-Host "[INFO] Using timeline video generator (multiple images)" -ForegroundColor Cyan
+        & $PYTHON "generate_video_with_timeline.py"
+    } else {
+        Write-Host "[INFO] Using standard video generator (single image)" -ForegroundColor Cyan
+        & $PYTHON "generate_video.py"
+    }
     
     if ($LASTEXITCODE -ne 0) {
         Write-Host "[ERROR] Video generation failed" -ForegroundColor Red

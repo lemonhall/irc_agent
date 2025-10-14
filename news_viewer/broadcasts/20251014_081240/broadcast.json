@@ -9,7 +9,8 @@
       "audio_file": "broadcast_00_intro.mp3",
       "duration": 4.11,
       "start_time": 0.0,
-      "end_time": 4.11
+      "end_time": 4.11,
+      "image_file": "intro_background.jpg"
     },
     {
       "category_id": "world",
@@ -19,7 +20,8 @@
       "audio_file": "broadcast_01_world.mp3",
       "duration": 35.7,
       "start_time": 4.11,
-      "end_time": 39.8
+      "end_time": 39.8,
+      "image_file": "image_01_world.jpg"
     },
     {
       "category_id": "asia",
@@ -29,7 +31,8 @@
       "audio_file": "broadcast_02_asia.mp3",
       "duration": 37.45,
       "start_time": 39.8,
-      "end_time": 77.26
+      "end_time": 77.26,
+      "image_file": "image_02_asia.jpg"
     },
     {
       "category_id": "americas",
@@ -39,7 +42,8 @@
       "audio_file": "broadcast_03_americas.mp3",
       "duration": 45.29,
       "start_time": 77.26,
-      "end_time": 122.55
+      "end_time": 122.55,
+      "image_file": "image_03_americas.jpg"
     },
     {
       "category_id": "us",
@@ -49,7 +53,8 @@
       "audio_file": "broadcast_04_us.mp3",
       "duration": 45.58,
       "start_time": 122.55,
-      "end_time": 168.13
+      "end_time": 168.13,
+      "image_file": "image_04_us.jpg"
     },
     {
       "category_id": "middleeast",
@@ -59,7 +64,8 @@
       "audio_file": "broadcast_05_middleeast.mp3",
       "duration": 44.11,
       "start_time": 168.13,
-      "end_time": 212.25
+      "end_time": 212.25,
+      "image_file": "image_05_middleeast.jpg"
     },
     {
       "category_id": "economy",
@@ -69,7 +75,8 @@
       "audio_file": "broadcast_06_economy.mp3",
       "duration": 49.19,
       "start_time": 212.25,
-      "end_time": 261.44
+      "end_time": 261.44,
+      "image_file": "image_06_economy.jpg"
     },
     {
       "category_id": "technology",
@@ -79,7 +86,8 @@
       "audio_file": "broadcast_07_technology.mp3",
       "duration": 48.09,
       "start_time": 261.44,
-      "end_time": 309.53
+      "end_time": 309.53,
+      "image_file": "image_07_technology.jpg"
     },
     {
       "category_id": "science",
@@ -89,7 +97,8 @@
       "audio_file": "broadcast_08_science.mp3",
       "duration": 50.85,
       "start_time": 309.53,
-      "end_time": 360.38
+      "end_time": 360.38,
+      "image_file": "image_08_science.jpg"
     },
     {
       "category_id": "outro",
@@ -98,7 +107,8 @@
       "audio_file": "broadcast_09_outro.mp3",
       "duration": 4.3,
       "start_time": 360.38,
-      "end_time": 364.68
+      "end_time": 364.68,
+      "image_file": null
     }
   ],
   "total_duration": 364.68,
