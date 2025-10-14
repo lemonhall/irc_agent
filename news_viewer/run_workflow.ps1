@@ -163,12 +163,6 @@ if (-not $SkipVideo) {
     Write-Host ""
 }
 
-    Write-Host ""
-} else {
-    Write-Host "[SKIP] Video generation" -ForegroundColor Gray
-    Write-Host ""
-}
-
 # Step 6: Add BGM to Video
 if (-not $SkipBGM -and -not $SkipVideo) {
     Write-Host "========================================" -ForegroundColor Yellow
@@ -219,7 +213,7 @@ if ($latestDir) {
         # 显示音频文件
         foreach ($file in $files) {
             $sizeMB = [math]::Round($file.Length / 1MB, 2)
-            $icon = if ($file.Name -like "*full_with_bgm*") { "🎵✨" } elseif ($file.Name -like "*full.mp3") { "🎵" } else { "🔊" }
+            $icon = if ($file.Name -like "*full_with_bgm*") { "[BGM]" } elseif ($file.Name -like "*full.mp3") { "[Audio]" } else { "[Sound]" }
             Write-Host "  $icon $($file.Name) ($sizeMB MB)"
         }
         
@@ -232,10 +226,7 @@ if ($latestDir) {
             foreach ($file in $matchedVideos) {
                 if (-not $displayedVideos.ContainsKey($file.FullName)) {
                     $sizeMB = [math]::Round($file.Length / 1MB, 2)
-                    $icon = if ($file.Name -like "*with_bgm*") { "🎬✨" } 
-                            elseif ($file.Name -like "*with_effects*") { "🎬🌊" } 
-                            elseif ($file.Name -like "*merged*") { "🎬" } 
-                            else { "📹" }
+                    $icon = if ($file.Name -like "*with_bgm*") { "[Video+BGM]" } elseif ($file.Name -like "*with_effects*") { "[Video+FX]" } elseif ($file.Name -like "*merged*") { "[Video]" } else { "[Media]" }
                     Write-Host "  $icon $($file.Name) ($sizeMB MB)"
                     $displayedVideos[$file.FullName] = $true
                 }
@@ -262,11 +253,11 @@ if ($latestDir) {
         }
         
         if ($finalAudio) {
-            Write-Host "🎵 Final Audio: $($finalAudio.FullName)" -ForegroundColor Green
+            Write-Host "[Audio] Final Audio: $($finalAudio.FullName)" -ForegroundColor Green
         }
         
         if ($finalVideo) {
-            Write-Host "🎬 Final Video: $($finalVideo.FullName)" -ForegroundColor Green
+            Write-Host "[Video] Final Video: $($finalVideo.FullName)" -ForegroundColor Green
         }
         
         Write-Host ""
