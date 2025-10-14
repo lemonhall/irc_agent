@@ -6,6 +6,7 @@ param(
     [switch]$SkipBroadcast,
     [switch]$SkipAudio,
     [switch]$SkipBGM,
+    [switch]$SkipVideo,
     [double]$BGMVolume = 0.15
 )
 
@@ -94,7 +95,7 @@ if (-not $SkipAudio) {
 # Step 4: Add BGM
 if (-not $SkipBGM) {
     Write-Host "========================================" -ForegroundColor Yellow
-    Write-Host "STEP 4/4: Add BGM" -ForegroundColor Yellow
+    Write-Host "STEP 4/5: Add BGM" -ForegroundColor Yellow
     Write-Host "========================================" -ForegroundColor Yellow
     
     $bgmDir = Join-Path $NEWS_VIEWER_DIR "bgm"
@@ -119,6 +120,26 @@ if (-not $SkipBGM) {
     Write-Host ""
 }
 
+# Step 5: Generate Video
+if (-not $SkipVideo) {
+    Write-Host "========================================" -ForegroundColor Yellow
+    Write-Host "STEP 5/5: Generate Video" -ForegroundColor Yellow
+    Write-Host "========================================" -ForegroundColor Yellow
+    
+    & $PYTHON "generate_video.py"
+    
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "[ERROR] Video generation failed" -ForegroundColor Red
+        exit 1
+    }
+    
+    Write-Host "[OK] Video generation completed" -ForegroundColor Green
+    Write-Host ""
+} else {
+    Write-Host "[SKIP] Video generation" -ForegroundColor Gray
+    Write-Host ""
+}
+
 # Summary
 Write-Host "========================================" -ForegroundColor Green
 Write-Host "COMPLETED!" -ForegroundColor Green
@@ -133,11 +154,21 @@ if ($latestDir) {
     Write-Host ""
     
     $files = Get-ChildItem -Path $latestDir.FullName -Filter "*.mp3"
-    if ($files.Count -gt 0) {
+    $videoFiles = Get-ChildItem -Path $latestDir.FullName -Filter "*.mp4"
+    
+    if ($files.Count -gt 0 -or $videoFiles.Count -gt 0) {
         Write-Host "Files:" -ForegroundColor Cyan
+        
+        # 显示音频文件
         foreach ($file in $files) {
             $sizeMB = [math]::Round($file.Length / 1MB, 2)
-            Write-Host "  - $($file.Name) ($sizeMB MB)"
+            Write-Host "  🎵 $($file.Name) ($sizeMB MB)"
+        }
+        
+        # 显示视频文件
+        foreach ($file in $videoFiles) {
+            $sizeMB = [math]::Round($file.Length / 1MB, 2)
+            Write-Host "  🎬 $($file.Name) ($sizeMB MB)"
         }
         Write-Host ""
         
@@ -147,9 +178,14 @@ if ($latestDir) {
         }
         
         if ($fullAudio) {
-            Write-Host "Output File: $($fullAudio.FullName)" -ForegroundColor Gray
-            Write-Host ""
+            Write-Host "Audio File: $($fullAudio.FullName)" -ForegroundColor Gray
         }
+        
+        if ($videoFiles.Count -gt 0) {
+            Write-Host "Video File: $($videoFiles[0].FullName)" -ForegroundColor Gray
+        }
+        
+        Write-Host ""
     }
 }
 
