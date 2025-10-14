@@ -169,10 +169,10 @@ class TimelineVideoGenerator:
             
             if success:
                 temp_videos.append(temp_video)
-                print(f"   ✅ 片段生成成功")
             else:
-                print(f"   ❌ 片段生成失败")
-                return False
+                print(f"   ❌ 片段生成失败，跳过")
+                # 继续处理下一个片段，而不是直接返回失败
+                continue
         
         if not temp_videos:
             print("❌ 没有生成任何视频片段")
@@ -183,10 +183,11 @@ class TimelineVideoGenerator:
         success = self._concat_videos(temp_videos, output_path)
         
         # 清理临时文件
-        print("🧹 清理临时文件...")
+        print("\n🧹 清理临时文件...")
         for temp_video in temp_videos:
             try:
                 temp_video.unlink()
+                print(f"   🗑️ 已删除: {temp_video.name}")
             except Exception as e:
                 print(f"   ⚠️ 无法删除: {temp_video.name}")
         
@@ -211,6 +212,8 @@ class TimelineVideoGenerator:
         """生成单个视频片段"""
         
         colors = self.COLOR_SCHEMES.get(color_scheme, self.COLOR_SCHEMES["default"])
+        
+        print(f"   ⏱️ 片段时长: {duration:.1f}秒", flush=True)
         
         # 裁剪音频
         if image_path:
@@ -263,7 +266,7 @@ class TimelineVideoGenerator:
                 str(output_path)
             ]
         
-        return self._run_ffmpeg(cmd)
+        return self._run_ffmpeg(cmd, expected_duration=duration)
     
     def _build_filter_with_image(self, effect: VisualEffect, colors: str) -> str:
         """构建带图片的滤镜"""
@@ -331,24 +334,65 @@ class TimelineVideoGenerator:
         
         return success
     
-    def _run_ffmpeg(self, cmd: list) -> bool:
+    def _run_ffmpeg(self, cmd: list, expected_duration: Optional[float] = None, show_progress: bool = True) -> bool:
         """运行 ffmpeg 命令"""
         try:
-            result = subprocess.run(
-                cmd,
-                capture_output=True,
-                text=True,
-                check=True
-            )
-            return True
+            if show_progress and expected_duration:
+                # 显示实时进度（百分比）
+                print(f"   ⏳ 处理中: 0%", end="", flush=True)
+                process = subprocess.Popen(
+                    cmd,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True
+                )
+                
+                # 读取 stderr（ffmpeg 的进度信息在这里）
+                import re
+                last_percent = -1
+                for line in process.stderr:
+                    # 提取时间信息（格式：time=00:00:10.23）
+                    if "time=" in line:
+                        match = re.search(r'time=(\d+):(\d+):(\d+\.\d+)', line)
+                        if match:
+                            h, m, s = match.groups()
+                            current_time = int(h) * 3600 + int(m) * 60 + float(s)
+                            percent = min(100, int((current_time / expected_duration) * 100))
+                            
+                            # 每 5% 更新一次显示
+                            if percent >= last_percent + 5:
+                                print(f"\r   ⏳ 处理中: {percent}%", end="", flush=True)
+                                last_percent = percent
+                
+                process.wait()
+                print(f"\r   ✅ 处理完成: 100%")
+                
+                if process.returncode != 0:
+                    print(f"   ❌ ffmpeg 错误 (退出码: {process.returncode})")
+                    return False
+                return True
+            else:
+                # 静默模式或简单模式
+                print(f"   ⏳ 处理中...", flush=True)
+                result = subprocess.run(
+                    cmd,
+                    capture_output=True,
+                    text=True,
+                    check=True
+                )
+                print(f"   ✅ 处理完成")
+                return True
         except subprocess.CalledProcessError as e:
-            print(f"❌ ffmpeg 错误:")
+            print(f"\n   ❌ ffmpeg 错误:")
             if e.stderr:
                 # 只显示最后几行错误
                 error_lines = e.stderr.split('\n')[-10:]
                 for line in error_lines:
                     if line.strip():
-                        print(f"   {line}")
+                        print(f"      {line}")
+            return False
+        except Exception as e:
+            print(f"\n   ❌ 处理错误: {e}")
             return False
 
 

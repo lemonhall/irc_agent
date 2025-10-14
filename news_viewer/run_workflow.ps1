@@ -1,5 +1,28 @@
 # News Broadcast Automation Script (Windows PowerShell)
-# Workflow: Fetch News -> Generate Script -> Generate Audio -> Add BGM
+# 
+# 完整工作流（6步）:
+#   1. Fetch News         - 抓取新闻数据
+#   2. Generate Broadcast - 生成播报脚本
+#   3. Generate Audio     - 文本转语音（含时间轴）
+#   4. Assign Images      - 配置图片（AI搜索+下载）
+#   5. Generate Video     - 生成视频（支持时间轴多图切换）
+#   6. Add BGM to Video   - 为视频添加背景音乐
+#
+# 参数说明:
+#   -SkipFetch       : 跳过新闻抓取
+#   -SkipBroadcast   : 跳过播报脚本生成
+#   -SkipAudio       : 跳过音频生成
+#   -SkipImages      : 跳过图片配置
+#   -SkipBGM         : 跳过BGM添加
+#   -SkipVideo       : 跳过视频生成
+#   -UseTimeline     : 使用时间轴视频生成器（多图切换）
+#   -BGMVolume       : BGM音量（0.0-1.0，默认0.15）
+#
+# 使用示例:
+#   .\run_workflow.ps1                               # 完整流程（传统模式）
+#   .\run_workflow.ps1 -UseTimeline                  # 完整流程（时间轴模式）⭐推荐
+#   .\run_workflow.ps1 -SkipFetch -UseTimeline       # 跳过抓新闻
+#   .\run_workflow.ps1 -UseTimeline -BGMVolume 0.2   # 调整BGM音量
 
 param(
     [switch]$SkipFetch,
@@ -114,47 +137,19 @@ if (-not $SkipImages) {
     Write-Host ""
 }
 
-# Step 5: Add BGM
-if (-not $SkipBGM) {
-    Write-Host "========================================" -ForegroundColor Yellow
-    Write-Host "STEP 5/6: Add BGM" -ForegroundColor Yellow
-    Write-Host "========================================" -ForegroundColor Yellow
-    
-    $bgmDir = Join-Path $NEWS_VIEWER_DIR "bgm"
-    $bgmFiles = Get-ChildItem -Path $bgmDir -Filter "*.mp3" -ErrorAction SilentlyContinue
-    
-    if ($bgmFiles.Count -eq 0) {
-        Write-Host "[WARN] No BGM files" -ForegroundColor Yellow
-    } else {
-        & $PYTHON "add_bgm.py" "--volume" $BGMVolume
-        
-        if ($LASTEXITCODE -ne 0) {
-            Write-Host "[ERROR] BGM failed" -ForegroundColor Red
-            exit 1
-        }
-        
-        Write-Host "[OK] BGM completed" -ForegroundColor Green
-    }
-    
-    Write-Host ""
-} else {
-    Write-Host "[SKIP] BGM" -ForegroundColor Gray
-    Write-Host ""
-}
-
-# Step 6: Generate Video
+# Step 5: Generate Video
 if (-not $SkipVideo) {
     Write-Host "========================================" -ForegroundColor Yellow
-    Write-Host "STEP 6/6: Generate Video" -ForegroundColor Yellow
+    Write-Host "STEP 5/6: Generate Video" -ForegroundColor Yellow
     Write-Host "========================================" -ForegroundColor Yellow
     
     if ($UseTimeline) {
         Write-Host "[INFO] Using timeline video generator (multiple images)" -ForegroundColor Cyan
-        & $PYTHON "generate_video_with_timeline.py"
     } else {
-        Write-Host "[INFO] Using standard video generator (single image)" -ForegroundColor Cyan
-        & $PYTHON "generate_video.py"
+        Write-Host "[INFO] Using optimized video generator" -ForegroundColor Cyan
     }
+    
+    & $PYTHON "generate_video_optimized.py"
     
     if ($LASTEXITCODE -ne 0) {
         Write-Host "[ERROR] Video generation failed" -ForegroundColor Red
@@ -168,6 +163,40 @@ if (-not $SkipVideo) {
     Write-Host ""
 }
 
+    Write-Host ""
+} else {
+    Write-Host "[SKIP] Video generation" -ForegroundColor Gray
+    Write-Host ""
+}
+
+# Step 6: Add BGM to Video
+if (-not $SkipBGM -and -not $SkipVideo) {
+    Write-Host "========================================" -ForegroundColor Yellow
+    Write-Host "STEP 6/6: Add BGM to Video" -ForegroundColor Yellow
+    Write-Host "========================================" -ForegroundColor Yellow
+    
+    $bgmDir = Join-Path $NEWS_VIEWER_DIR "bgm"
+    $bgmFiles = Get-ChildItem -Path $bgmDir -Filter "*.mp3" -ErrorAction SilentlyContinue
+    
+    if ($bgmFiles.Count -eq 0) {
+        Write-Host "[WARN] No BGM files found, skipping video BGM" -ForegroundColor Yellow
+    } else {
+        & $PYTHON "add_bgm_to_video.py" "--volume" $BGMVolume
+        
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "[ERROR] Video BGM addition failed" -ForegroundColor Red
+            exit 1
+        }
+        
+        Write-Host "[OK] Video BGM added successfully" -ForegroundColor Green
+    }
+    
+    Write-Host ""
+} else {
+    Write-Host "[SKIP] Video BGM" -ForegroundColor Gray
+    Write-Host ""
+}
+
 # Summary
 Write-Host "========================================" -ForegroundColor Green
 Write-Host "COMPLETED!" -ForegroundColor Green
@@ -178,39 +207,66 @@ $broadcastsDir = Join-Path $NEWS_VIEWER_DIR "broadcasts"
 $latestDir = Get-ChildItem -Path $broadcastsDir -Directory | Sort-Object LastWriteTime -Descending | Select-Object -First 1
 
 if ($latestDir) {
-    Write-Host "Output: $($latestDir.Name)" -ForegroundColor Cyan
+    Write-Host "Output Directory: $($latestDir.Name)" -ForegroundColor Cyan
     Write-Host ""
     
     $files = Get-ChildItem -Path $latestDir.FullName -Filter "*.mp3"
     $videoFiles = Get-ChildItem -Path $latestDir.FullName -Filter "*.mp4"
     
     if ($files.Count -gt 0 -or $videoFiles.Count -gt 0) {
-        Write-Host "Files:" -ForegroundColor Cyan
+        Write-Host "Generated Files:" -ForegroundColor Cyan
         
         # 显示音频文件
         foreach ($file in $files) {
             $sizeMB = [math]::Round($file.Length / 1MB, 2)
-            Write-Host "  🎵 $($file.Name) ($sizeMB MB)"
+            $icon = if ($file.Name -like "*full_with_bgm*") { "🎵✨" } elseif ($file.Name -like "*full.mp3") { "🎵" } else { "🔊" }
+            Write-Host "  $icon $($file.Name) ($sizeMB MB)"
         }
         
-        # 显示视频文件
-        foreach ($file in $videoFiles) {
-            $sizeMB = [math]::Round($file.Length / 1MB, 2)
-            Write-Host "  🎬 $($file.Name) ($sizeMB MB)"
+        # 显示视频文件（按优先级排序）
+        $priorityOrder = @("*with_bgm.mp4", "*with_effects.mp4", "*merged.mp4", "*.mp4")
+        $displayedVideos = @{}
+        
+        foreach ($pattern in $priorityOrder) {
+            $matchedVideos = $videoFiles | Where-Object { $_.Name -like $pattern } | Sort-Object LastWriteTime -Descending
+            foreach ($file in $matchedVideos) {
+                if (-not $displayedVideos.ContainsKey($file.FullName)) {
+                    $sizeMB = [math]::Round($file.Length / 1MB, 2)
+                    $icon = if ($file.Name -like "*with_bgm*") { "🎬✨" } 
+                            elseif ($file.Name -like "*with_effects*") { "🎬🌊" } 
+                            elseif ($file.Name -like "*merged*") { "🎬" } 
+                            else { "📹" }
+                    Write-Host "  $icon $($file.Name) ($sizeMB MB)"
+                    $displayedVideos[$file.FullName] = $true
+                }
+            }
         }
+        
         Write-Host ""
         
-        $fullAudio = $files | Where-Object { $_.Name -like "*full_with_bgm*" } | Select-Object -First 1
-        if (-not $fullAudio) {
-            $fullAudio = $files | Where-Object { $_.Name -like "*full.mp3" } | Select-Object -First 1
+        # 显示最终成品路径
+        $finalAudio = $files | Where-Object { $_.Name -like "*full_with_bgm*" } | Select-Object -First 1
+        if (-not $finalAudio) {
+            $finalAudio = $files | Where-Object { $_.Name -like "*full.mp3" } | Select-Object -First 1
         }
         
-        if ($fullAudio) {
-            Write-Host "Audio File: $($fullAudio.FullName)" -ForegroundColor Gray
+        $finalVideo = $videoFiles | Where-Object { $_.Name -like "*with_bgm.mp4" } | Select-Object -First 1
+        if (-not $finalVideo) {
+            $finalVideo = $videoFiles | Where-Object { $_.Name -like "*with_effects.mp4" } | Select-Object -First 1
+        }
+        if (-not $finalVideo) {
+            $finalVideo = $videoFiles | Where-Object { $_.Name -like "*merged.mp4" } | Select-Object -First 1
+        }
+        if (-not $finalVideo -and $videoFiles.Count -gt 0) {
+            $finalVideo = $videoFiles | Sort-Object LastWriteTime -Descending | Select-Object -First 1
         }
         
-        if ($videoFiles.Count -gt 0) {
-            Write-Host "Video File: $($videoFiles[0].FullName)" -ForegroundColor Gray
+        if ($finalAudio) {
+            Write-Host "🎵 Final Audio: $($finalAudio.FullName)" -ForegroundColor Green
+        }
+        
+        if ($finalVideo) {
+            Write-Host "🎬 Final Video: $($finalVideo.FullName)" -ForegroundColor Green
         }
         
         Write-Host ""
