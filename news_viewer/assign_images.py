@@ -36,35 +36,32 @@ class NewsImageAssigner:
         
         print("🖼️ 新闻图片配置器初始化完成")
     
-    def generate_search_keywords(self, category_name: str, script: str) -> str:
+    def generate_search_keywords(self, news_title: str) -> str:
         """
-        使用 AI 生成图片搜索关键词
+        使用 AI 根据新闻标题生成图片搜索关键词
         
         Args:
-            category_name: 类别名称（如 "🌍 世界新闻"）
-            script: 播报稿文本
+            news_title: 新闻标题
             
         Returns:
             英文搜索关键词
         """
-        prompt = f"""你是一位专业的图片编辑。根据以下新闻播报内容，生成合适的图片搜索关键词。
+        prompt = f"""你是一位专业的图片编辑。根据以下新闻标题，生成合适的图片搜索关键词。
 
-类别：{category_name}
-播报稿：
-{script}
+新闻标题：{news_title}
 
 要求：
 1. 生成 2-4 个英文关键词，用空格分隔
-2. 关键词要能代表这段新闻的核心主题
+2. 关键词要能代表这条新闻的核心主题
 3. 选择视觉效果好、适合做背景的主题
 4. 避免过于具体的人物或事件，选择抽象概念
 5. 优先选择：城市天际线、自然风景、科技元素、商务场景等
 6. 只返回关键词，不要解释
 
 示例：
-- 世界新闻 → "world news global map"
-- 科技新闻 → "technology digital innovation"
-- 经济新闻 → "business finance cityscape"
+- "乌克兰和平方案：少谈判多武器" → "military weapons conflict"
+- "优衣库创始人将征服美国视为个人使命" → "business retail shopping"
+- "轰炸虽停 巴勒斯坦人仍无欢庆理由" → "middle east cityscape"
 
 请直接返回关键词："""
 
@@ -80,8 +77,8 @@ class NewsImageAssigner:
             return keywords
         except Exception as e:
             print(f"   ⚠️ AI 生成失败，使用默认关键词: {e}")
-            # 降级方案：根据类别返回默认关键词
-            return self._get_default_keywords(category_name)
+            # 降级方案：返回通用关键词
+            return "news background professional"
     
     def _get_default_keywords(self, category_name: str) -> str:
         """获取默认关键词（降级方案）"""
@@ -175,7 +172,7 @@ class NewsImageAssigner:
     
     def assign_images_to_broadcast(self, broadcast_dir: Path) -> bool:
         """
-        为 broadcast.json 中的每个部分配置图片
+        为 broadcast.json 中的每个部分配置图片（支持分段式）
         
         Args:
             broadcast_dir: broadcast 目录路径
@@ -206,9 +203,11 @@ class NewsImageAssigner:
         for i, script_item in enumerate(scripts):
             category_id = script_item.get("category_id", "")
             category_name = script_item.get("category_name", "")
-            script_text = script_item.get("script", "")
+            news_title = script_item.get("news_title", "")  # 新增：获取新闻标题
             
             print(f"[{i+1}/{len(scripts)}] {category_name}")
+            if news_title:
+                print(f"   📰 {news_title[:40]}...")
             
             # 特殊处理 intro 和 outro
             if category_id == "intro":
@@ -231,13 +230,18 @@ class NewsImageAssigner:
                     script_item["image_file"] = None
                 continue
             
-            # 正常新闻片段：AI 生成关键词 + 搜索图片
-            keywords = self.generate_search_keywords(category_name, script_text)
+            # 正常新闻片段：根据新闻标题生成关键词 + 搜索图片
+            if news_title:
+                keywords = self.generate_search_keywords(news_title)
+            else:
+                # 降级方案：如果没有标题，使用类别名
+                keywords = self._get_default_keywords(category_name)
+            
             image_url = self.search_image(keywords)
             
             if image_url:
-                # 下载图片
-                image_filename = f"image_{i:02d}_{category_id}.jpg"
+                # 下载图片（文件名包含索引和类别）
+                image_filename = f"image_{i:03d}_{category_id}.jpg"
                 image_path = broadcast_dir / image_filename
                 
                 if self.download_image(image_url, image_path):
