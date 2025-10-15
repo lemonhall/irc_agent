@@ -1,39 +1,39 @@
 {
-  "update_time": "2025-10-15 08:46:16",
+  "update_time": "2025-10-15 19:09:18",
   "categories": [
     {
       "id": "world",
       "name": "🌍 世界新闻",
       "news": [
         {
-          "title": "How Trump’s Gaza Peace Plan Presents Hurdles for Israel and Hamas",
-          "link": "https://www.nytimes.com/2025/10/14/world/middleeast/gaza-talks-phase-two.html",
-          "pubdate": "Tue, 14 Oct 2025 14:33:51 +0000",
-          "title_cn": "特朗普加沙和平方案为以哈双方设置障碍"
+          "title": "Spies, Burgers and Bombs: After a New War, Old Wounds Resurface in Tehran",
+          "link": "https://www.nytimes.com/2025/10/15/world/middleeast/iran-tehran-united-states.html",
+          "pubdate": "Wed, 15 Oct 2025 09:00:41 +0000",
+          "title_cn": "间谍、汉堡与炸弹：新战后德黑兰旧伤复发"
         },
         {
-          "title": "As U.S. Warships Patrol Caribbean, Drug Smugglers Shift Tactics",
-          "link": "https://www.nytimes.com/2025/10/14/us/us-drug-trafficking-boats-caribbean.html",
-          "pubdate": "Tue, 14 Oct 2025 23:52:05 +0000",
-          "title_cn": "美军舰巡逻加勒比海 毒贩调整走私策略"
+          "title": "Raila Odinga, Former Prime Minister of Kenya, Dies at 80",
+          "link": "https://www.nytimes.com/2025/10/15/world/africa/raila-odinga-kenya-dead.html",
+          "pubdate": "Wed, 15 Oct 2025 09:11:20 +0000",
+          "title_cn": "肯尼亚前总理奥廷加逝世 享年80岁"
         },
         {
-          "title": "Madagascar Rejoices After Military Takeover and Impeachment",
-          "link": "https://www.nytimes.com/2025/10/14/world/africa/madagascar.html",
-          "pubdate": "Tue, 14 Oct 2025 20:39:11 +0000",
-          "title_cn": "马达加斯加军方接管政权及弹劾后举国欢庆"
+          "title": "A Photographer Captures Jewish Life Before and After the Holocaust",
+          "link": "https://www.nytimes.com/2025/10/15/world/europe/edward-serotta-centropa-holocaust-testimonies.html",
+          "pubdate": "Wed, 15 Oct 2025 09:01:18 +0000",
+          "title_cn": "摄影师记录大屠杀前后的犹太生活"
         },
         {
-          "title": "China Wants Foreign Scientists. The Public Says No, Thanks.",
-          "link": "https://www.nytimes.com/2025/10/14/world/asia/china-stem-visa-racist-backlash.html",
-          "pubdate": "Tue, 14 Oct 2025 13:47:54 +0000",
-          "title_cn": "中国引进外国科学家计划遭遇民意阻力"
+          "title": "London Became a Global Hub for Phone Theft. Now We Know Why.",
+          "link": "https://www.nytimes.com/2025/10/15/world/europe/london-police-phone-theft-china-gang.html",
+          "pubdate": "Wed, 15 Oct 2025 09:53:26 +0000",
+          "title_cn": "伦敦成手机盗窃重镇 背后原因终揭晓"
         },
         {
-          "title": "Ukraine’s Formula for Peace: Fewer Talks, More Weapons",
-          "link": "https://www.nytimes.com/2025/10/14/world/europe/zelensky-trump-tomahawk-missiles.html",
-          "pubdate": "Tue, 14 Oct 2025 18:17:41 +0000",
-          "title_cn": "乌克兰和平方案：减少谈判 增加武器供应"
+          "title": "‘Promises Have Not Been Kept’: What’s Behind Africa’s Youth Protests",
+          "link": "https://www.nytimes.com/2025/10/15/world/africa/africa-gen-z-protests-kenya.html",
+          "pubdate": "Wed, 15 Oct 2025 09:02:36 +0000",
+          "title_cn": "非洲青年抗议潮起 政府承诺未兑现"
         }
       ]
     },
@@ -42,34 +42,28 @@
       "name": "� 亚太新闻",
       "news": [
         {
+          "title": "‘Promises Have Not Been Kept’: What’s Behind Africa’s Youth Protests",
+          "link": "https://www.nytimes.com/2025/10/15/world/africa/africa-gen-z-protests-kenya.html",
+          "pubdate": "Wed, 15 Oct 2025 09:02:36 +0000",
+          "title_cn": "非洲青年抗议背后：承诺未兑现"
+        },
+        {
           "title": "Bangladesh Garment Factory Fire Kills at Least 16, Official Says",
           "link": "https://www.nytimes.com/2025/10/14/world/asia/bangladesh-garment-factory-fire.html",
           "pubdate": "Tue, 14 Oct 2025 17:23:25 +0000",
           "title_cn": "孟加拉国服装厂火灾致至少16人死亡"
         },
         {
-          "title": "China Wants Foreign Scientists. The Public Says No, Thanks.",
-          "link": "https://www.nytimes.com/2025/10/14/world/asia/china-stem-visa-racist-backlash.html",
-          "pubdate": "Tue, 14 Oct 2025 13:47:54 +0000",
-          "title_cn": "中国招募外国科学家遇公众阻力"
-        },
-        {
           "title": "For Uniqlo’s Founder, Conquering America Is Personal",
           "link": "https://www.nytimes.com/2025/10/14/business/uniqlo-tadashi-yanai.html",
           "pubdate": "Tue, 14 Oct 2025 14:34:01 +0000",
-          "title_cn": "优衣库创始人将征服美国视为个人使命"
+          "title_cn": "优衣库创始人将征服美国视为己任"
         },
         {
           "title": "A 4-Day Motorcycle Tour on Vietnam’s Ha Giang Loop",
           "link": "https://www.nytimes.com/2025/10/14/travel/vietnam-ha-giang-loop-tour-motorcycle.html",
           "pubdate": "Tue, 14 Oct 2025 09:00:16 +0000",
           "title_cn": "越南河江环路四日摩托车之旅"
-        },
-        {
-          "title": "Trump’s Two Minds on China Sow a Chaotic Few Days",
-          "link": "https://www.nytimes.com/2025/10/13/us/politics/trump-china-tariffs.html",
-          "pubdate": "Tue, 14 Oct 2025 03:00:00 +0000",
-          "title_cn": "特朗普对华政策反复引发数日混乱"
         }
       ]
     },
@@ -80,26 +74,26 @@
         {
           "title": "Inmates Make Brazen Escape in Guatemala",
           "link": "https://www.nytimes.com/2025/10/14/world/americas/guatemala-prison-escape.html",
-          "pubdate": "Wed, 15 Oct 2025 00:45:41 +0000",
+          "pubdate": "Wed, 15 Oct 2025 00:56:18 +0000",
           "title_cn": "危地马拉发生囚犯越狱事件"
         },
         {
           "title": "U.S. Military Kills 6 People in Boat Attack Near Venezuela, Trump Says",
           "link": "https://www.nytimes.com/2025/10/14/us/politics/trump-drugs-boat-attack.html",
           "pubdate": "Tue, 14 Oct 2025 20:01:24 +0000",
-          "title_cn": "美军在委内瑞拉附近击毙6名船袭者"
+          "title_cn": "美军在委内瑞拉附近击毙六名袭击者"
         },
         {
           "title": "Trump Dangles $20 Billion Lifeline for Argentina, With Strings Attached",
           "link": "https://www.nytimes.com/2025/10/14/us/politics/trump-argentina-leader-bailout.html",
           "pubdate": "Tue, 14 Oct 2025 23:21:38 +0000",
-          "title_cn": "特朗普设限提供阿根廷200亿美元援助"
+          "title_cn": "特朗普提出有条件援助阿根廷200亿美元"
         },
         {
           "title": "Cuban Dissident Leader Leaves Prison for Exile in the U.S.",
           "link": "https://www.nytimes.com/2025/10/13/world/americas/jose-daniel-ferrer-cuba.html",
           "pubdate": "Tue, 14 Oct 2025 19:46:33 +0000",
-          "title_cn": "古巴异见领袖获释流亡美国"
+          "title_cn": "古巴异见领袖获释赴美流亡"
         },
         {
           "title": "Dozens Are Dead and Dozens More Missing as Catastrophic Rains Devastate Mexico",
@@ -114,34 +108,34 @@
       "name": "🗽 美国新闻",
       "news": [
         {
-          "title": "ICE Is Cracking Down on Chicago. Some Chicagoans Are Fighting Back.",
-          "link": "https://www.nytimes.com/2025/10/14/us/chicago-ice-trump.html",
-          "pubdate": "Wed, 15 Oct 2025 00:38:07 +0000",
-          "title_cn": "芝加哥民众反击移民局严打行动"
+          "title": "State Department Adviser Charged With Illegally Storing Classified Documents",
+          "link": "https://www.nytimes.com/2025/10/15/us/politics/state-department-classified-documents-ashley-tellis.html",
+          "pubdate": "Wed, 15 Oct 2025 09:49:38 +0000",
+          "title_cn": "国务院顾问被控非法存储机密文件"
         },
         {
-          "title": "Trump Awards Charlie Kirk the Presidential Medal of Freedom",
-          "link": "https://www.nytimes.com/2025/10/14/us/politics/trump-charlie-kirk-medal.html",
-          "pubdate": "Wed, 15 Oct 2025 00:03:00 +0000",
-          "title_cn": "特朗普授予查理·柯克总统自由勋章"
+          "title": "What Are Tomahawk Missiles, and Why Might Trump Give Them to Ukraine?",
+          "link": "https://www.nytimes.com/2025/10/15/us/politics/tomahawk-missiles-trump-ukraine.html",
+          "pubdate": "Wed, 15 Oct 2025 09:04:23 +0000",
+          "title_cn": "战斧导弹解析：特朗普拟援乌原因探究"
         },
         {
-          "title": "Share Your Videos of ICE Interactions",
-          "link": "https://www.nytimes.com/2025/10/14/us/videos-ice-interactions.html",
-          "pubdate": "Tue, 14 Oct 2025 23:39:23 +0000",
-          "title_cn": "征集民众与移民局互动视频"
+          "title": "Supreme Court Asks When Police Can Enter Without Warrant in Emergency",
+          "link": "https://www.nytimes.com/2025/10/15/us/politics/supreme-court-warrants-emergency.html",
+          "pubdate": "Wed, 15 Oct 2025 09:04:12 +0000",
+          "title_cn": "最高法院审议警方紧急情况无令入室权限"
         },
         {
-          "title": "Trump Says He May Give Tomahawks to Ukraine. Is He Bluffing?",
-          "link": "https://www.nytimes.com/2025/10/14/us/politics/trump-tomahawks-ukraine-russia.html",
-          "pubdate": "Tue, 14 Oct 2025 22:49:20 +0000",
-          "title_cn": "特朗普称或向乌克兰提供战斧导弹"
+          "title": "Will the Voting Rights Act Be Gutted? Supreme Court Could Decide Its Future.",
+          "link": "https://www.nytimes.com/2025/10/15/us/politics/supreme-court-voting-rights-act.html",
+          "pubdate": "Wed, 15 Oct 2025 09:03:29 +0000",
+          "title_cn": "投票权法案面临存废 最高法院将定其命运"
         },
         {
-          "title": "Trump Administration Guts Education Department With More Layoffs",
-          "link": "https://www.nytimes.com/2025/10/14/us/politics/trump-education-department-federal-layoffs.html",
-          "pubdate": "Tue, 14 Oct 2025 23:12:42 +0000",
-          "title_cn": "教育部再遭裁员 特朗普政府持续削弱"
+          "title": "A Curfew In Greenville, Miss., Is Working to Curb Violent Crime",
+          "link": "https://www.nytimes.com/2025/10/15/us/greenville-mississippi-crime-curfew.html",
+          "pubdate": "Wed, 15 Oct 2025 09:01:06 +0000",
+          "title_cn": "格林维尔宵禁措施有效遏制暴力犯罪"
         }
       ]
     },
@@ -150,34 +144,34 @@
       "name": "🕌 中东新闻",
       "news": [
         {
+          "title": "Syria’s New Leaders Are Talking to Russia, a Former Enemy",
+          "link": "https://www.nytimes.com/2025/10/15/world/middleeast/syria-russia-ahmed-al-shara-putin.html",
+          "pubdate": "Wed, 15 Oct 2025 11:05:15 +0000",
+          "title_cn": "叙利亚新政府与昔日敌国俄罗斯展开对话"
+        },
+        {
+          "title": "Inside Iran’s Museum of American Espionage",
+          "link": "https://www.nytimes.com/video/world/middleeast/100000010446083/inside-irans-museum-of-american-espionage.html",
+          "pubdate": "Wed, 15 Oct 2025 09:01:06 +0000",
+          "title_cn": "探秘伊朗美国间谍博物馆内部"
+        },
+        {
+          "title": "Spies, Burgers and Bombs: After a New War, Old Wounds Resurface in Tehran",
+          "link": "https://www.nytimes.com/2025/10/15/world/middleeast/iran-tehran-united-states.html",
+          "pubdate": "Wed, 15 Oct 2025 09:00:41 +0000",
+          "title_cn": "间谍、汉堡与炸弹：新战争后德黑兰旧伤复发"
+        },
+        {
           "title": "How the U.S. and the Arab World Teamed Up to Seal the Gaza Deal",
           "link": "https://www.nytimes.com/2025/10/14/world/middleeast/us-arab-gaza-deal.html",
           "pubdate": "Tue, 14 Oct 2025 20:51:08 +0000",
-          "title_cn": "美阿联手促成加沙停火协议"
+          "title_cn": "美国与阿拉伯世界联手促成加沙协议"
         },
         {
           "title": "Why Was the President of FIFA at the Gaza Summit?",
           "link": "https://www.nytimes.com/2025/10/14/world/middleeast/gianni-infantino-fifa-trump.html",
           "pubdate": "Tue, 14 Oct 2025 17:58:26 +0000",
-          "title_cn": "国际足联主席出席加沙峰会原因探析"
-        },
-        {
-          "title": "Israel Pressures Hamas to Return Bodies, but Gaza’s Destruction Poses Challenge",
-          "link": "https://www.nytimes.com/2025/10/14/world/middleeast/israeli-hostages-bodies-hamas.html",
-          "pubdate": "Tue, 14 Oct 2025 21:30:20 +0000",
-          "title_cn": "以色列施压哈马斯归还遗体 加沙废墟成障碍"
-        },
-        {
-          "title": "How Trump’s Gaza Peace Plan Presents Hurdles for Israel and Hamas",
-          "link": "https://www.nytimes.com/2025/10/14/world/middleeast/gaza-talks-phase-two.html",
-          "pubdate": "Tue, 14 Oct 2025 14:33:51 +0000",
-          "title_cn": "特朗普加沙和平方案为以哈双方设障"
-        },
-        {
-          "title": "Trump Touts ‘Very Important Signing,’ but Details Are Few",
-          "link": "https://www.nytimes.com/2025/10/13/world/middleeast/summit-document-details.html",
-          "pubdate": "Mon, 13 Oct 2025 23:45:09 +0000",
-          "title_cn": "特朗普宣称\"重要签署\" 具体细节尚未披露"
+          "title_cn": "国际足联主席为何出席加沙峰会？"
         }
       ]
     },
@@ -194,14 +188,14 @@
         {
           "title": "Trump Enacts Tariffs on Imported Lumber and Furniture",
           "link": "https://www.nytimes.com/2025/10/14/business/economy/trump-tariffs-lumber-furniture-china.html",
-          "pubdate": "Tue, 14 Oct 2025 20:43:18 +0000",
+          "pubdate": "Tue, 14 Oct 2025 20:43:19 +0000",
           "title_cn": "特朗普对进口木材家具加征关税"
         },
         {
           "title": "Black Unemployment Is Surging Again. This Time Is Different.",
           "link": "https://www.nytimes.com/2025/10/12/business/economy/black-unemployment-federal-layoffs-diversity-initiatives.html",
           "pubdate": "Sun, 12 Oct 2025 18:15:10 +0000",
-          "title_cn": "黑人失业率再度激增态势异于往常"
+          "title_cn": "黑人失业率再度飙升 此次情况特殊"
         },
         {
           "title": "Trump Threatens 100% Tariffs on Chinese Goods",
@@ -213,7 +207,7 @@
           "title": "Riding the Wild Wave of Crypto Coverage",
           "link": "https://www.nytimes.com/2025/10/10/insider/cryptocurrency-reporting.html",
           "pubdate": "Fri, 10 Oct 2025 07:00:05 +0000",
-          "title_cn": "加密货币报道掀起市场巨浪"
+          "title_cn": "加密货币报道掀起市场狂潮"
         }
       ]
     },
@@ -231,19 +225,19 @@
           "title": "OpenAI Inks Deal With Broadcom to Design Its Own Chips for A.I.",
           "link": "https://www.nytimes.com/2025/10/13/technology/openai-broadcom-chips-deal.html",
           "pubdate": "Mon, 13 Oct 2025 13:00:07 +0000",
-          "title_cn": "OpenAI与博通签约自研AI芯片"
+          "title_cn": "OpenAI与博通签署AI芯片设计协议"
         },
         {
           "title": "How ‘TBPN’ Became Silicon Valley’s Newest Obsession",
           "link": "https://www.nytimes.com/2025/10/11/technology/tbpn-silicon-valley.html",
           "pubdate": "Sat, 11 Oct 2025 09:00:47 +0000",
-          "title_cn": "\"TBPN\"何以成为硅谷新宠"
+          "title_cn": "\"TBPN\"如何成为硅谷新宠"
         },
         {
           "title": "ChatGPT’s Platform Play + a Trillion-Dollar GPU Empire + the Queen of Slop",
           "link": "https://www.nytimes.com/2025/10/10/podcasts/hardfork-openai-devday-amd.html",
           "pubdate": "Fri, 10 Oct 2025 11:00:06 +0000",
-          "title_cn": "ChatGPT平台化战略与万亿GPU帝国"
+          "title_cn": "ChatGPT平台战略与万亿GPU帝国"
         },
         {
           "title": "Instagram Will Limit Content for Teenagers Based on PG-13 Ratings",
@@ -267,25 +261,25 @@
           "title": "‘Really Big’ Cascadia Earthquake Could Trigger San Andreas Fault Activity",
           "link": "https://www.nytimes.com/2025/10/12/science/earthquake-san-andreas-cascadia.html",
           "pubdate": "Sun, 12 Oct 2025 09:01:16 +0000",
-          "title_cn": "强震或引发圣安德烈斯断层活动"
+          "title_cn": "强震或引发圣安德烈亚斯断层活动"
         },
         {
           "title": "How to Deal With 30 to 50 Feral Hogs",
           "link": "https://www.nytimes.com/2025/10/11/science/texas-feral-hogs.html",
           "pubdate": "Sat, 11 Oct 2025 09:00:25 +0000",
-          "title_cn": "应对30至50头野猪侵扰指南"
+          "title_cn": "应对30至50头野猪侵袭指南"
         },
         {
           "title": "Every Artist Has a Favorite Subject. For Some, That’s Math.",
           "link": "https://www.nytimes.com/2025/10/10/science/mathematics-art-roelofs.html",
           "pubdate": "Mon, 13 Oct 2025 15:13:35 +0000",
-          "title_cn": "艺术家钟情数学创作主题"
+          "title_cn": "数学成部分艺术家创作主题"
         },
         {
           "title": "Why the Green Cheese Turned White",
           "link": "https://www.nytimes.com/2025/10/09/science/why-the-green-cheese-turned-white.html",
           "pubdate": "Thu, 09 Oct 2025 09:04:29 +0000",
-          "title_cn": "绿色奶酪变白成因探析"
+          "title_cn": "绿色奶酪变白成因解析"
         }
       ]
     }

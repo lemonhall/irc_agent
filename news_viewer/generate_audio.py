@@ -40,93 +40,136 @@ class NewsAudioGenerator:
         print(f"🎤 新闻音频生成器初始化完成 (声音: {self.voice})")
         print(f"🔑 使用火山引擎 TTS API")
     
-    def generate_audio(self, text: str, output_path: Path) -> tuple[bool, float]:
+    def generate_audio(self, text: str, output_path: Path, max_retries: int = 3) -> tuple[bool, float]:
         """
-        为文本生成音频（使用火山引擎TTS）
+        为文本生成音频（使用火山引擎TTS，支持自动重试）
         
         Args:
             text: 文本内容
             output_path: 输出路径
+            max_retries: 最大重试次数（默认3次）
             
         Returns:
             (是否成功, 音频时长秒数)
         """
-        try:
-            print(f"📝 文本长度: {len(text)} 字符")
-            
-            # 构造请求
-            reqid = str(uuid.uuid4())
-            
-            headers = {
-                "Authorization": f"Bearer;{self.access_token}",
-                "Content-Type": "application/json",
-            }
-            
-            payload = {
-                "app": {
-                    "appid": self.app_id,
-                    "token": "token_ignored_but_required",
-                    "cluster": self.cluster,
-                },
-                "user": {
-                    "uid": "news_broadcast_user"
-                },
-                "audio": {
-                    "voice_type": self.voice,
-                    "encoding": "mp3",
-                    "speed_ratio": 1.0,
-                    "rate": 24000,
-                    "BitRate": 128,
-                },
-                "request": {
-                    "reqid": reqid,
-                    "text": text,
-                    "operation": "query",
-                }
-            }
-            
-            # 调用API
-            response = requests.post(self.tts_url, headers=headers, data=json.dumps(payload), timeout=60)
-            response.raise_for_status()
-            
-            result = response.json()
-            log_id = response.headers.get("X-Tt-Logid")
-            
-            if result.get("code") == 3000:
-                audio_data_base64 = result.get("data")
-                if audio_data_base64:
-                    audio_data = base64.b64decode(audio_data_base64)
-                    
-                    # 保存为MP3文件（改扩展名）
-                    output_path = output_path.with_suffix('.mp3')
-                    with open(output_path, 'wb') as f:
-                        f.write(audio_data)
-                    
-                    # 获取时长
-                    duration_ms = result.get("addition", {}).get("duration", 0)
-                    try:
-                        # 可能是字符串或数字，统一转换
-                        duration_sec = float(duration_ms) / 1000.0
-                    except (ValueError, TypeError):
-                        duration_sec = 0.0
-                    
-                    print(f"✅ 保存成功: {output_path.name} ({duration_sec:.1f}秒)")
-                    if log_id:
-                        print(f"   日志ID: {log_id}")
-                    
-                    return True, duration_sec
-                else:
-                    print(f"❌ API响应但无音频数据")
-                    return False, 0.0
-            else:
-                print(f"❌ API错误: Code={result.get('code')}, Message={result.get('message')}")
-                if log_id:
-                    print(f"   日志ID: {log_id}")
-                return False, 0.0
+        print(f"📝 文本长度: {len(text)} 字符")
+        
+        for attempt in range(max_retries):
+            try:
+                if attempt > 0:
+                    wait_time = 2 ** attempt  # 指数退避：2秒、4秒、8秒
+                    print(f"� 第 {attempt + 1}/{max_retries} 次重试（等待 {wait_time} 秒）...")
+                    time.sleep(wait_time)
                 
-        except Exception as e:
-            print(f"❌ 生成失败: {e}")
-            return False, 0.0
+                # 构造请求
+                reqid = str(uuid.uuid4())
+                
+                headers = {
+                    "Authorization": f"Bearer;{self.access_token}",
+                    "Content-Type": "application/json",
+                }
+                
+                payload = {
+                    "app": {
+                        "appid": self.app_id,
+                        "token": "token_ignored_but_required",
+                        "cluster": self.cluster,
+                    },
+                    "user": {
+                        "uid": "news_broadcast_user"
+                    },
+                    "audio": {
+                        "voice_type": self.voice,
+                        "encoding": "mp3",
+                        "speed_ratio": 1.0,
+                        "rate": 24000,
+                        "BitRate": 128,
+                    },
+                    "request": {
+                        "reqid": reqid,
+                        "text": text,
+                        "operation": "query",
+                    }
+                }
+                
+                # 调用API
+                response = requests.post(self.tts_url, headers=headers, data=json.dumps(payload), timeout=60)
+                response.raise_for_status()
+                
+                result = response.json()
+                log_id = response.headers.get("X-Tt-Logid")
+                
+                if result.get("code") == 3000:
+                    audio_data_base64 = result.get("data")
+                    if audio_data_base64:
+                        audio_data = base64.b64decode(audio_data_base64)
+                        
+                        # 保存为MP3文件（改扩展名）
+                        output_path = output_path.with_suffix('.mp3')
+                        with open(output_path, 'wb') as f:
+                            f.write(audio_data)
+                        
+                        # 获取时长
+                        duration_ms = result.get("addition", {}).get("duration", 0)
+                        try:
+                            # 可能是字符串或数字，统一转换
+                            duration_sec = float(duration_ms) / 1000.0
+                        except (ValueError, TypeError):
+                            duration_sec = 0.0
+                        
+                        success_msg = f"✅ 保存成功: {output_path.name} ({duration_sec:.1f}秒)"
+                        if attempt > 0:
+                            success_msg += f" [重试 {attempt} 次后成功]"
+                        print(success_msg)
+                        if log_id:
+                            print(f"   日志ID: {log_id}")
+                        
+                        return True, duration_sec
+                    else:
+                        print(f"❌ API响应但无音频数据")
+                        # 这种情况不重试
+                        return False, 0.0
+                else:
+                    error_msg = f"❌ API错误: Code={result.get('code')}, Message={result.get('message')}"
+                    if log_id:
+                        error_msg += f" (日志ID: {log_id})"
+                    print(error_msg)
+                    # API业务错误不重试
+                    return False, 0.0
+                    
+            except requests.exceptions.HTTPError as e:
+                # HTTP 5xx 错误可以重试
+                if e.response.status_code >= 500:
+                    print(f"❌ 服务器错误 {e.response.status_code}: {e}")
+                    if attempt < max_retries - 1:
+                        continue  # 继续重试
+                    else:
+                        print(f"💥 已达到最大重试次数 ({max_retries})，放弃")
+                        return False, 0.0
+                else:
+                    # 4xx 错误不重试
+                    print(f"❌ 客户端错误: {e}")
+                    return False, 0.0
+                    
+            except (requests.exceptions.Timeout, requests.exceptions.ConnectionError) as e:
+                # 网络错误可以重试
+                print(f"❌ 网络错误: {e}")
+                if attempt < max_retries - 1:
+                    continue  # 继续重试
+                else:
+                    print(f"💥 已达到最大重试次数 ({max_retries})，放弃")
+                    return False, 0.0
+                    
+            except Exception as e:
+                # 其他未知错误
+                print(f"❌ 生成失败: {e}")
+                if attempt < max_retries - 1:
+                    continue  # 尝试重试
+                else:
+                    return False, 0.0
+        
+        # 理论上不会到这里
+        return False, 0.0
     
     def _get_mp3_duration(self, mp3_path: Path) -> float:
         """
