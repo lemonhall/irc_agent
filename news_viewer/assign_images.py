@@ -46,22 +46,25 @@ class NewsImageAssigner:
         Returns:
             英文搜索关键词
         """
-        prompt = f"""你是一位专业的图片编辑。根据以下新闻标题，生成合适的图片搜索关键词。
+        prompt = f"""你是一位专业的图片编辑。根据以下新闻标题，生成精确的图片搜索关键词。
 
 新闻标题：{news_title}
 
 要求：
 1. 生成 2-4 个英文关键词，用空格分隔
-2. 关键词要能代表这条新闻的核心主题
-3. 选择视觉效果好、适合做背景的主题
-4. 避免过于具体的人物或事件，选择抽象概念
-5. 优先选择：城市天际线、自然风景、科技元素、商务场景等
-6. 只返回关键词，不要解释
+2. **必须先提取核心实体**：国家、城市、品牌、人物、组织等专有名词
+3. 保留具体信息，不要过度抽象化
+4. 地理位置必须准确（如 Ukraine、Palestine、Shanghai 等）
+5. 品牌名称必须保留（如 Uniqlo、Tesla、Apple 等）
+6. 然后补充场景关键词（如 cityscape、war、technology 等）
+7. 只返回关键词，不要解释
 
 示例：
-- "乌克兰和平方案：少谈判多武器" → "military weapons conflict"
-- "优衣库创始人将征服美国视为个人使命" → "business retail shopping"
-- "轰炸虽停 巴勒斯坦人仍无欢庆理由" → "middle east cityscape"
+- "乌克兰和平方案：少谈判多武器" → "Ukraine military weapons"
+- "优衣库创始人将征服美国视为个人使命" → "Uniqlo store retail"
+- "轰炸虽停 巴勒斯坦人仍无欢庆理由" → "Palestine Gaza cityscape"
+- "特斯拉上海工厂扩建完成" → "Tesla Shanghai factory"
+- "苹果发布新款 iPhone" → "Apple iPhone technology"
 
 请直接返回关键词："""
 
