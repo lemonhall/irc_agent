@@ -178,7 +178,7 @@ class NewsAudioGenerator:
             data = json.load(f)
         
         scripts = data.get('scripts', [])
-        print(f"\n🎵 共 {len(scripts)} 个新闻段落")
+        print(f"\n🎵 共 {len(scripts)} 个播报段落")
         
         # 输出目录（与JSON文件同目录）
         output_dir = json_file.parent
@@ -188,43 +188,14 @@ class NewsAudioGenerator:
         timeline = []  # 存储时间轴信息
         cumulative_time = 0.0  # 累积时间
         
-        # 1. 生成开场白
-        print(f"\n{'='*60}")
-        print(f"🎙️  [1/{len(scripts)+2}] 开场白")
-        intro_text = "欢迎收听新闻播报。以下是今日的新闻内容。"
-        intro_path = output_dir / f"{base_name}_00_intro.mp3"
-        
-        success, duration = self.generate_audio(intro_text, intro_path)
-        if success:
-            audio_files.append(intro_path)
-            # 如果API没有返回时长，使用ffprobe获取
-            if duration == 0.0:
-                duration = self._get_mp3_duration(intro_path)
-            
-            # 记录时间轴
-            start_time = cumulative_time
-            end_time = cumulative_time + duration
-            timeline.append({
-                "category_id": "intro",
-                "category_name": "🎙️ 开场白",
-                "script": intro_text,
-                "audio_file": intro_path.name,
-                "duration": round(duration, 2),
-                "start_time": round(start_time, 2),
-                "end_time": round(end_time, 2)
-            })
-            cumulative_time = end_time
-        
-        time.sleep(1)  # API限流
-        
-        # 2. 生成各个新闻段落
-        for i, script_item in enumerate(scripts, 1):
+        # 生成各个播报段落（包括开场白）
+        for i, script_item in enumerate(scripts):
             category_name = script_item['category_name']
             script_text = script_item['script']
             category_id = script_item['category_id']
             
             print(f"\n{'='*60}")
-            print(f"🎙️  [{i+1}/{len(scripts)+2}] {category_name}")
+            print(f"🎙️  [{i+1}/{len(scripts)}] {category_name}")
             
             output_path = output_dir / f"{base_name}_{i:02d}_{category_id}.mp3"
             
@@ -246,11 +217,11 @@ class NewsAudioGenerator:
             
             time.sleep(1)  # API限流
         
-        # 3. 生成结束语
+        # 生成结束语
         print(f"\n{'='*60}")
-        print(f"🎙️  [{len(scripts)+2}/{len(scripts)+2}] 结束语")
+        print(f"🎙️  [{len(scripts)+1}/{len(scripts)+1}] 结束语")
         outro_text = "以上就是本次新闻播报的全部内容，感谢收听。"
-        outro_path = output_dir / f"{base_name}_{len(scripts)+1:02d}_outro.mp3"
+        outro_path = output_dir / f"{base_name}_{len(scripts):02d}_outro.mp3"
         
         success, duration = self.generate_audio(outro_text, outro_path)
         if success:
@@ -273,10 +244,11 @@ class NewsAudioGenerator:
             })
             cumulative_time = end_time
         
-        # 4. 更新 JSON 文件，添加 intro 和 outro，并回写时长信息
-        # 创建新的 scripts 列表，包含 intro + 原有内容 + outro
-        updated_scripts = [timeline[0]] + scripts + [timeline[-1]]
-        data['scripts'] = updated_scripts
+        # 更新 JSON 文件，添加 outro 并回写时长信息
+        # scripts 已经包含了 intro 和所有新闻，只需要添加 outro
+        if timeline:  # 如果 outro 生成成功
+            scripts.append(timeline[0])
+        data['scripts'] = scripts
         data['total_duration'] = round(cumulative_time, 2)
         data['audio_generated_time'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         

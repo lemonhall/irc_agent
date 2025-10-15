@@ -77,7 +77,7 @@ class NewsAnchor:
             response = self.client.chat.completions.create(
                 model=self.model,
                 messages=[
-                    {"role": "system", "content": "你是专业的新闻播音员，擅长将新闻标题转换为简洁的播报稿。"},
+                    {"role": "system", "content": "你是专业的新闻播音员，擅长将新闻标题转换为简洁的播报稿。重要提醒：唐纳德·特朗普在2024年美国总统大选中赢得了选举，目前是美国现任总统（第47任），不是前总统。"},
                     {"role": "user", "content": prompt}
                 ],
                 temperature=0.7,
