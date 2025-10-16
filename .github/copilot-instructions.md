@@ -6,11 +6,6 @@
 ## 核心架构
 
 ### 多 Agent 系统设计
-- **三个独立进程**：每个 Agent 通过独立的 `main.py`/`main2.py`/`main3.py` 运行
-- **配置隔离**：`config.py`/`config2.py`/`config3.py` 为每个 Agent 定义不同的人格、模型和行为
-- **共享代码**：`irc_client.py` 和 `ai_agent.py` 被所有 Agent 复用
-- **包管理器**：使用 `uv` 作为 Python 包管理器（`pyproject.toml`）
-- **启动方式**：使用 PowerShell 脚本 `start_bot2.ps1`/`start_bot3.ps1` 启动（或直接 `uv run python main.py`）
 
 ### Agent 人格配置（关键差异）
 | Agent | 昵称 | 城市 | 模型 | API | 风格 | Temperature |
@@ -22,39 +17,14 @@
 ## 核心技术实现
 
 ### 1. 智能响应判断 (`ai_agent.py::should_respond()`)
-- **AI 驱动**：使用 LLM 判断是否应该回应（不是简单的关键词匹配）
-- **人类检测**：通过白名单 `KNOWN_BOTS = ["mingxuan", "yueran", "zhiyuan"]` 识别人类用户
-- **防止刷屏**：随机 1-3 轮的 `max_bot_turns`，达到阈值后只对人类或 @ 提及响应
-- **问候语快速响应**：对 "大家好"、"有人么"、"hello" 等问候语快速响应
-- **降级机制**：AI 判断失败时降级到 `trigger_keywords` 关键词触发
-- **强制回复条件**：直接提及 bot 名字时必须回复
 
 ### 2. 时间感知系统 (重要特性)
-- **动态注入**：每次 API 调用时在系统提示末尾添加 `[当前时间：2025年10月13日 9点35分]`
-- **消息时间戳跟踪**：`message_timestamps: dict[int, datetime]` 记录每条消息的发送时间
-- **历史消息标记**：超过 30 分钟的消息标记为 `[历史对话]`
-- **自动重置机制**：超过 60 分钟无消息自动清空历史（`_check_and_reset_if_needed()`）
-- **位置**：`generate_response()` 和 `should_respond()` 中的 `messages_with_time`
-- **不污染历史**：使用 `copy()` 创建临时列表，原始 `conversation_history` 不包含时间
 
 ### 3. 括号清理机制 (`remove_parenthetical_content()`)
-- **目的**：防止 AI 添加舞台指示或元评论，如 `(注：xxx)` 或 `(思考片刻)`
-- **实现**：正则 `r'[（(][^）)]*[）)]'` 移除所有中英文括号及其内容
-- **应用时机**：`generate_response()` 返回前自动清理所有括号内容
 
 ### 4. 对话历史管理
-- **容量**：`max_history = 20`，保留系统提示 + 最近 19 条消息
-- **格式**：`[来自 {sender} 在 {channel}]: {message}` 提供上下文
-- **轮数提示**：在最后一条消息添加 `[系统提示：这是最近第 X 轮 bot 连续对话...]`
-- **时间戳索引**：`self.message_timestamps: dict[int, datetime]` 跟踪消息时间
-- **智能清理**：删除旧消息时同步更新时间戳索引
 
 ### 5. 向量记忆系统 (实验性功能)
-- **文件**：`memory_system.py` - 长期记忆能力（基于 ChromaDB）
-- **记忆价值判断**：只有评分 >= 7 的消息存入长期记忆（`MEMORY_SCORE_THRESHOLD`）
-- **时间衰减**：30天后记忆权重开始衰减（`MEMORY_DECAY_DAYS`）
-- **用户隔离**：为每个用户维护独立的记忆档案
-- **语义检索**：基于当前话题智能召回相关历史记忆
 
 ## 开发工作流
 
@@ -84,13 +54,10 @@ uv run python show_agents_info.py         # 显示所有 Agent 配置
 ```
 
 ### 测试框架
-- **单元测试**：`test_*.py` 文件测试特定功能
   - `test_clean_brackets.py` - 括号清理功能
   - `test_user_detection.py` - 人类用户检测
   - `test_time_awareness.py` - 时间感知系统
   - `test_time_injection.py` - 时间注入机制
-- **集成测试**：直接运行 Agent 并在 IRC 频道观察交互
-- **API 测试**：`test_ling.py` 测试 Ling-1T API 连接
 
 ## 项目特定约定
 
@@ -113,15 +80,8 @@ IRC_SASL_PASSWORD=  # 可选
 ```
 
 ### 系统提示编写准则
-- **严禁括号**：在所有 `system_prompt` 中强调 "❌ 绝对不要用括号写旁白或舞台指示"
-- **自然对话**：强调 "你是真实的聊天参与者，不是在演剧本"
-- **暂停时机**：明确何时应该停止回复（如 "好的"、"谢谢" 等终止词）
-- **时间感知**：不需要在提示中说明时间注入（系统自动处理）
 
 ### 频道名称规范
-- IRC 频道必须以 `#` 开头
-- `irc_client.py::normalize_channel()` 自动添加 `#` 前缀
-- 配置文件中可以省略 `#`（如 `ai-collab-test` → `#ai-collab-test`）
 
 ## 常见陷阱
 
@@ -132,11 +92,6 @@ IRC_SASL_PASSWORD=  # 可选
 5. **KeyboardInterrupt 处理**：使用 `os._exit(0)` 强制退出，因为 miniirc 的线程可能阻塞普通退出
 
 ## 项目依赖
-- **uv**：Python 包管理器（推荐）
-- **miniirc**：轻量级 IRC 客户端库
-- **openai**：OpenAI SDK（兼容 Ling API）
-- **python-dotenv**：环境变量加载
-- **chromadb** (可选)：向量记忆系统支持
 
 ## 关键文件架构图解
 
@@ -152,18 +107,10 @@ irc_agent/
 ```
 
 ## 未来扩展方向
-- 向量数据库集成（长期记忆）
-- 任务分配和跟踪系统
-- 多频道支持
-- Web 监控界面
-- 命令系统（如 `!reset`、`!status`）
 
 ## 关键开发模式
 
 ### 错误处理模式
-- **退出机制**：使用 `os._exit(0)` 强制退出，因为 miniirc 的线程可能阻塞普通退出
-- **API 降级**：AI 判断失败时自动降级到关键词匹配
-- **健壮解析**：对 LLM 响应进行多重验证和降级处理
 
 ### 消息流设计模式
 1. **接收** → IRC 客户端捕获消息
@@ -173,6 +120,3 @@ irc_agent/
 5. **发送** → 返回给 IRC 客户端
 
 ### 状态管理模式
-- **对话历史**：固定窗口大小，自动滚动
-- **时间戳**：与消息索引关联，支持历史清理
-- **bot 计数**：随机重置机制避免刷屏
